@@ -32,9 +32,11 @@ setup(
     keywords='web3, pandas',
     python_requires='>=3.6,<4',
     install_requires=[
-        'pyspark==3.2.1',
         'web3==5.26.0'
     ],
+    extras_require = {
+        'pyspark':  ["pyspark==3.1.2"]
+    },
     project_urls={
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
         'Source': 'https://github.com/tellery/blockchain-spark',
