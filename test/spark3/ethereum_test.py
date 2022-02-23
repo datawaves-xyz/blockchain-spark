@@ -37,13 +37,25 @@ class SchemaTestCase(unittest.TestCase):
         self.assertFalse('PERMIT_TYPEHASH' in struct_type.fieldNames())
         self.assertTrue('getApproved' in struct_type.fieldNames())
 
-        self.assertTrue(deep_get_data_type('acceptBid', struct_type).typeName(), 'struct')
-        self.assertTrue(deep_get_data_type('acceptBid.tokenId', struct_type).typeName(), 'long')
-        self.assertTrue(deep_get_data_type('acceptBid.bid', struct_type).typeName(), 'struct')
-        self.assertTrue(deep_get_data_type('acceptBid.bid.amount', struct_type).typeName(), 'long')
-        self.assertTrue(deep_get_data_type('acceptBid.bid.currency', struct_type).typeName(), 'string')
+        self.assertEqual(deep_get_data_type('acceptBid', struct_type).typeName(), 'struct')
+        self.assertEqual(deep_get_data_type('acceptBid.tokenId', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('acceptBid.bid', struct_type).typeName(), 'struct')
+        self.assertEqual(deep_get_data_type('acceptBid.bid.amount', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('acceptBid.bid.currency', struct_type).typeName(), 'string')
 
         # TODO test complex ABI type
+
+    def test_get_function_call_schema2(self):
+        abi = json.loads(_read_resource('log_abi2.json'))
+        struct_type = get_call_schema(abi=abi, mode='event')
+
+        self.assertEqual(deep_get_data_type('AddLiquidity', struct_type).typeName(), 'struct')
+        self.assertEqual(deep_get_data_type('AddLiquidity.provider', struct_type).typeName(), 'string')
+        self.assertEqual(deep_get_data_type('AddLiquidity.token_amounts', struct_type).typeName(), 'array')
+        self.assertEqual(deep_get_data_type('AddLiquidity.token_amounts', struct_type).elementType.typeName(), 'long')
+        self.assertEqual(deep_get_data_type('AddLiquidity.fees', struct_type).typeName(), 'array')
+        self.assertEqual(deep_get_data_type('AddLiquidity.fees', struct_type).elementType.typeName(), 'long')
+        self.assertEqual(deep_get_data_type('AddLiquidity.invariant', struct_type).typeName(), 'long')
 
     def test_decode_function_input_with_abi(self):
         abi = _read_resource('trace_abi1.json')

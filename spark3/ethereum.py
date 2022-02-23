@@ -24,8 +24,9 @@ def _get_spark_type_by_name(type_name: str) -> DataType:
         if re.search(regex_str, type_name) is not None:
             return data_type
 
-        if type_name.endswith('[]'):
-            return ArrayType(_get_spark_type_by_name(regex_str[:-2]))
+    array_reg = re.search(r'\[[\d]*\]$', type_name)
+    if array_reg:
+        return ArrayType(_get_spark_type_by_name(type_name[:array_reg.start()]))
 
 
 def _flatten_schema_from_components(component_abi: [Dict[str, Any]]) -> StructType:
