@@ -18,7 +18,7 @@ class Transformer:
         parse_traces_udf = udf(f=lambda input_data, abi_str: decode_function_input_with_abi(input_data, abi_str),
                                returnType=schema)
 
-        return df.filter(col('input').isNotNull) \
+        return df.filter(col('input').isNotNull()) \
             .withColumn('function_parameters', parse_traces_udf('input', lit(abi))) \
             .filter(col('function_parameters').isNotNull())
 
@@ -35,6 +35,6 @@ class Transformer:
         parse_logs_udf = udf(f=lambda data, topics, abi_str: decode_log_data_with_abi(data, topics, abi_str),
                              returnType=schema)
 
-        return df.filter(col('data').isNotNull) \
+        return df.filter(col('data').isNotNull()) \
             .withColumn('log_parameters', parse_logs_udf('data', 'topics', lit(abi))) \
             .filter(col('log_parameters').isNotNull())
