@@ -3,7 +3,8 @@ import re
 from typing import Dict, Any, Tuple, List, Optional
 
 from eth_utils import encode_hex, event_abi_to_log_topic, decode_hex
-from pyspark.sql.types import StructType, LongType, DataType, StringType, DoubleType, BooleanType, ArrayType
+from pyspark.sql.types import StructType, LongType, DataType, StringType, BooleanType, ArrayType, BinaryType, \
+    DecimalType
 from web3 import Web3
 
 # ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
@@ -12,9 +13,9 @@ abi_to_spark_type: Dict[str, DataType] = {
     r'^int[^\[\]]*$': LongType(),
     r'^address$': StringType(),
     r'^bool$': BooleanType(),
-    r'^fixed.*x[^\[\]]*$': DoubleType(),
-    r'^ufixed.*x[^\[\]]*$': DoubleType(),
-    r'^bytes[^\[\]]*$': StringType(),
+    r'^fixed.*x[^\[\]]*$': DecimalType(),
+    r'^ufixed.*x[^\[\]]*$': DecimalType(),
+    r'^bytes[^\[\]]*$': BinaryType(),
     r'^string$': StringType()
 }
 
