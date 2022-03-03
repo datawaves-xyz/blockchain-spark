@@ -150,6 +150,16 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+.history/
+
 # Custom
 supervisor.conf
 /tmp
+.DS_Store
