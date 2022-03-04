@@ -11,14 +11,14 @@ long_description = read('README.md') if os.path.isfile("README.md") else ""
 
 setup(
     name='blockchain-spark',
-    version='0.2.2',
+    version='0.3.0beta1',
     author='songv',
     author_email='songwei@iftech.io',
     description='Spark extension utils for blockchain',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/tellery/blockchain-spark',
-    packages=find_packages(),
+    packages=find_packages(exclude=["test.*", "test"]),
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
@@ -32,10 +32,10 @@ setup(
     keywords='web3, pandas',
     python_requires='>=3.6,<4',
     install_requires=[
-        'web3==5.26.0'
+        'requests>=2.16.0'
     ],
     extras_require={
-        'pyspark': ["pyspark==3.1.2"]
+        'pyspark': ["pyspark==3.2.1"],
     },
     project_urls={
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
