@@ -66,11 +66,13 @@ class Transformer:
         return df \
             .withColumn("abi", lit(abi)) \
             .withColumn("func_name", lit(name)) \
-            .withColumn("function_parameter", expr("decode_func_%s(input, abi, func_name)" % name)) \
+            .withColumn("function_parameter", expr("decode_func_%s(input, output, abi, func_name)" % name)) \
+            .filter(col('function_parameter').isNotNull()) \
             .drop("abi") \
             .drop("input") \
+            .drop("output") \
             .drop("func_name") \
-            .filter(col('function_parameter').isNotNull())
+
 
     @staticmethod
     def parse_log_to_event(df: DataFrame,
@@ -92,7 +94,7 @@ class Transformer:
             .withColumn("abi", lit(abi)) \
             .withColumn("evt_name", lit(name)) \
             .withColumn("event_parameter", expr("decode_evt_%s(data, topics_arr, abi, evt_name)" % name)) \
+            .filter(col('event_parameter').isNotNull()) \
             .drop("abi") \
             .drop("data") \
-            .drop("evt_name") \
-            .filter(col('event_parameter').isNotNull())
+            .drop("evt_name")

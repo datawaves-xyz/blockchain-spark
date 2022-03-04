@@ -26,7 +26,6 @@ from spark3.exceptions import (
 
 from spark3.providers import IContractABIProvider
 
-
 # ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
 abi_to_spark_type: Dict[str, DataType] = {
     r'^uint256$': DecimalType(precision=38),
@@ -62,7 +61,7 @@ class Contract:
         self._abi_provider = abi_provider
         if abi is None and abi_provider is None:
             raise ValueError("Either abi or abi_provider should be provided")
-        
+
         self._function_schema = None
         self._event_schema = None
 
@@ -162,9 +161,9 @@ def _get_spark_type_by_name(type_name: str) -> DataType:
 
 def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> StructType:
     struct_type = StructType()
-    for field in component_abi:
-        # the default name of filed is 'param'
-        fname = field.get('name') if len(field.get('name', '')) > 0 else 'param'
+    for idx, field in enumerate(component_abi):
+        # the default name for anonymous field is '_{idx}'
+        fname = field.get('name') if len(field.get('name', '')) > 0 else f'_{idx}'
         ftype = field.get('type')
         if ftype != 'tuple':
             struct_type.add(field=fname, data_type=_get_spark_type_by_name(ftype),
@@ -185,15 +184,19 @@ def get_call_schema_map(abi: List[Dict[str, Any]], mode: str) -> Dict:
     func_abi_list = [i for i in abi if i.get('type') == mode]
     schemas_by_func_name = {}
     for func_abi in func_abi_list:
-        ftype = func_abi.get('inputs', [])
         func_name = func_abi.get('name')
 
-        if len(ftype) == 0:
-            schemas_by_func_name[func_name] = StructType()
-        else:
-            schemas_by_func_name[func_name] = _flatten_schema_from_components(
-                component_abi=func_abi.get('inputs'))
+        s = StructType()
 
+        if len(func_abi.get('inputs', [])) > 0:
+            s.add(field='inputs',
+                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('inputs')))
+
+        if len(func_abi.get('outputs', [])) > 0:
+            s.add(field='outputs',
+                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('outputs')))
+
+        schemas_by_func_name[func_name] = s
     return schemas_by_func_name
 
 
