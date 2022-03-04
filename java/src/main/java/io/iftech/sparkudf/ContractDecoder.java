@@ -111,6 +111,9 @@ public class ContractDecoder {
     }
 
     public static byte[] decodeHexStartsWith0x(String hex) {
+        if (hex == null) {
+            return new byte[]{};
+        }
         if (hex.startsWith("0x")) {
             return FastHex.decode(hex, 2, hex.length() - 2);
         } else {
@@ -132,7 +135,7 @@ public class ContractDecoder {
         return JavaConverters.asScalaIteratorConverter(inputList.iterator()).asScala().toSeq();
     }
 
-    protected static Seq<Object> convertListToSeq(Object[] it) {
+    protected static Seq<Object> convertListToSeq(Object... it) {
         return convertListToSeq(Arrays.asList(it));
     }
 }
