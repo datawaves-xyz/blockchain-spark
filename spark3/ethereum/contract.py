@@ -99,7 +99,7 @@ class Contract:
             name
         )
 
-    def _get_abi_item_json(self, name):
+    def _get_abi_item_json(self, name) -> str:
         abi_list = [x for x in self.abi
                     if x['type'] in ('function', 'event') and x['name'] == name]
         if len(abi_list) == 0:
@@ -117,9 +117,9 @@ class Contract:
 
 def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> StructType:
     struct_type = StructType()
-    for field in component_abi:
-        # the default name of filed is 'param'
-        fname = field.get('name') if len(field.get('name', '')) > 0 else 'param'
+    for idx, field in enumerate(component_abi):
+        # the default name for anonymous field is '_{idx}'
+        fname = field.get('name') if len(field.get('name', '')) > 0 else f'_{idx}'
         ftype = field.get('type')
         if ftype != 'tuple':
             struct_type.add(field=fname,
@@ -139,15 +139,19 @@ def get_call_schema_map(abi: List[Dict[str, Any]], mode: str) -> Dict:
     func_abi_list = [i for i in abi if i.get('type') == mode]
     schemas_by_func_name = {}
     for func_abi in func_abi_list:
-        ftype = func_abi.get('inputs', [])
         func_name = func_abi.get('name')
 
-        if len(ftype) == 0:
-            schemas_by_func_name[func_name] = StructType()
-        else:
-            schemas_by_func_name[func_name] = _flatten_schema_from_components(
-                component_abi=func_abi.get('inputs'))
+        s = StructType()
 
+        if len(func_abi.get('inputs', [])) > 0:
+            s.add(field='inputs',
+                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('inputs')))
+
+        if len(func_abi.get('outputs', [])) > 0:
+            s.add(field='outputs',
+                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('outputs')))
+
+        schemas_by_func_name[func_name] = s
     return schemas_by_func_name
 
 

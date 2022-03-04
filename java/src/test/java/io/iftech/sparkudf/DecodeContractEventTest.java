@@ -39,9 +39,10 @@ public class DecodeContractEventTest {
         }),
         gson.toJson(e), "Transfer");
 
-    assertEquals("0xB3f923eaBAF178fC1BD8E13902FC5C61D3DdEF5B", row.get(0));
-    assertEquals("0x28C6c06298d514Db089934071355E5743bf21d60", row.get(1));
-    assertTrue((new BigInteger("279283000000000000000000")).compareTo((BigInteger) row.get(2)) == 0);
+    Row inputs = row.getStruct(0);
+    assertEquals("0xB3f923eaBAF178fC1BD8E13902FC5C61D3DdEF5B", inputs.get(0));
+    assertEquals("0x28C6c06298d514Db089934071355E5743bf21d60", inputs.get(1));
+    assertTrue((new BigInteger("279283000000000000000000")).compareTo((BigInteger) inputs.get(2)) == 0);
   }
 
   protected class Field {

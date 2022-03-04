@@ -32,30 +32,31 @@ class SchemaTestCase(unittest.TestCase):
         schema_map = get_function_schema(abi=abi)
         struct_type = schema_map['acceptBid']
 
-        self.assertEqual(deep_get_data_type('tokenId', struct_type).typeName(), 'long')
-        self.assertEqual(deep_get_data_type('bid', struct_type).typeName(), 'struct')
-        self.assertEqual(deep_get_data_type('bid.amount', struct_type).typeName(), 'long')
-        self.assertEqual(deep_get_data_type('bid.currency', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.tokenId', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.bid', struct_type).typeName(), 'struct')
+        self.assertEqual(deep_get_data_type('inputs.bid.amount', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.bid.currency', struct_type).typeName(), 'long')
 
     def test_address_parse_as_string(self):
         abi = json.loads(_read_resource('trace_abi1.json'))
         struct_type = get_function_schema(abi=abi)['isApprovedForAll']
-        self.assertEqual(deep_get_data_type('owner', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.owner', struct_type).typeName(), 'long')
 
-    def test_empty_function_inputs(self):
+    def test_function_outputs(self):
         abi = json.loads(_read_resource('trace_abi1.json'))
         schema_map = get_function_schema(abi=abi)
-        self.assertEqual(schema_map['MINT_WITH_SIG_TYPEHASH'].names, [])
-        self.assertEqual(schema_map['PERMIT_TYPEHASH'].names, [])
+        struct_type = schema_map['MINT_WITH_SIG_TYPEHASH']
+        print(struct_type)
+        self.assertEqual(deep_get_data_type('outputs._0', struct_type).typeName(), 'binary')
 
     # TODO est complex ABI type
     def test_get_function_call_schema2(self):
         abi = json.loads(_read_resource('log_abi2.json'))
         struct_type = get_event_schema(abi=abi)['AddLiquidity']
 
-        self.assertEqual(deep_get_data_type('provider', struct_type).typeName(), 'long')
-        self.assertEqual(deep_get_data_type('token_amounts', struct_type).typeName(), 'array')
-        self.assertEqual(deep_get_data_type('token_amounts', struct_type).elementType.typeName(), 'long')
-        self.assertEqual(deep_get_data_type('fees', struct_type).typeName(), 'array')
-        self.assertEqual(deep_get_data_type('fees', struct_type).elementType.typeName(), 'long')
-        self.assertEqual(deep_get_data_type('invariant', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.provider', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.token_amounts', struct_type).typeName(), 'array')
+        self.assertEqual(deep_get_data_type('inputs.token_amounts', struct_type).elementType.typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.fees', struct_type).typeName(), 'array')
+        self.assertEqual(deep_get_data_type('inputs.fees', struct_type).elementType.typeName(), 'long')
+        self.assertEqual(deep_get_data_type('inputs.invariant', struct_type).typeName(), 'long')
