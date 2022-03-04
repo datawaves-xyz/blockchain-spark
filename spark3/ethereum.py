@@ -24,6 +24,9 @@ from spark3.exceptions import (
     TypeNotSupported
 )
 
+from spark3.providers import ContractABIProvider
+
+
 # ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
 abi_to_spark_type: Dict[str, DataType] = {
     r'^uint256$': DecimalType(precision=38),
@@ -48,13 +51,13 @@ abi_to_spark_type: Dict[str, DataType] = {
 
 
 class Contract:
-    def __init__(self, address: str, spark3):
-        self.address = address
+    def __init__(self, spark3, address: str, abi: str = None, abi_provider: ContractABIProvider = None):
         self.spark3 = spark3
-        self._abi_json = None
-
-        if self.spark3.contractABIProvider is not None:
-            self._abi_json = self.spark3.contractABIProvider.get_contract_abi(self.address)
+        self.address = address
+        self._abi_json = abi
+        self._abi_provider = abi_provider
+        if abi is None and abi_provider is None:
+            raise ValueError("Either abi or abi_provider should be provided")
 
     @functools.cached_property
     def abi(self) -> Dict:
@@ -62,13 +65,13 @@ class Contract:
 
     @property
     def abi_json(self) -> str:
-        if self._abi_json is None:
-            raise ContractABINotConfigured()
-        return self._abi_json
+        if self._abi_json is not None:
+            return self._abi_json
 
-    @abi_json.setter
-    def abi_json(self, json):
-        self._abi_json = json
+        if self._abi_provider is not None:
+            return self._abi_provider.get_contract_abi(self.address)
+
+        raise ContractABINotConfigured()
 
     def get_function_schema_by_name(self, func_name):
         return get_function_schema(self.abi).get(func_name)
