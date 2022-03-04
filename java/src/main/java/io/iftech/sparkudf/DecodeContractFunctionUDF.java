@@ -24,36 +24,35 @@ public class DecodeContractFunctionUDF implements UDF4<String, String, String, S
             throw new IllegalArgumentException("Function name not match, eventABI=" + functionABI);
         }
 
-        Tuple inputTuple, outputTuple;
-        Row inputResult = null;
-        Row outputResult = null;
-
-        try {
-            byte[] inputData = ContractDecoder.decodeHexStartsWith0x(inputHex);
-            byte[] outputData = ContractDecoder.decodeHexStartsWith0x(outputHex);
-
-            // See why BytesBuffer is useful: https://github.com/esaulpaugh/headlong/issues/34
-            inputTuple = f.decodeCall(ByteBuffer.wrap(inputData));
-            outputTuple = f.decodeReturn(ByteBuffer.wrap(outputData));
-
-        } catch (IllegalArgumentException ex) {
-            // silent about the wrong selector error
-            return null;
-        } catch (Exception ex) {
-            LOG.info("Fail to decode function, name=" + f.getName(), ex);
-            return null;
-        }
-
-        inputResult = ContractDecoder.buildRowFromTuple(f.getInputs(), inputTuple);
-        outputResult = ContractDecoder.buildRowFromTuple(f.getOutputs(), outputTuple);
-
         List<Object> values = new LinkedList<>();
-        if (inputResult.length() > 0) {
-            values.add(inputResult);
+
+        if (f.getInputs().size() > 0) {
+
+            try {
+                byte[] inputData = ContractDecoder.decodeHexStartsWith0x(inputHex);
+                // See why BytesBuffer is useful:
+                // https://github.com/esaulpaugh/headlong/issues/34
+                Tuple inputTuple = f.decodeCall(ByteBuffer.wrap(inputData));
+                Row inputResult = ContractDecoder.buildRowFromTuple(f.getInputs(), inputTuple);
+                values.add(inputResult);
+            } catch (Exception ex) {
+                LOG.info("Fail to decode function, name=" + f.getName(), ex);
+                return null;
+            }
         }
-        if (outputResult.length() > 0) {
-            values.add(outputResult);
+
+        if (f.getOutputs().size() > 0) {
+            try {
+                byte[] outputData = ContractDecoder.decodeHexStartsWith0x(outputHex);
+                Tuple outputTuple = f.decodeReturn(ByteBuffer.wrap(outputData));
+                Row outputResult = ContractDecoder.buildRowFromTuple(f.getOutputs(), outputTuple);
+                values.add(outputResult);
+            } catch (Exception ex) {
+                LOG.info("Fail to decode function, name=" + f.getName(), ex);
+                return null;
+            }
         }
+
         return Row.fromSeq(ContractDecoder.convertListToSeq(values));
     }
 }
