@@ -8,7 +8,7 @@ from spark3.exceptions import FailToGetEtherscanABI
 
 class IContractABIProvider(metaclass=ABCMeta):
 
-    @abstractmethod()
+    @abstractmethod
     def get_contract_abi(self, contract_address: str) -> str:
         pass
 

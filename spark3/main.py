@@ -1,9 +1,11 @@
+from typing import Optional
+
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import lit, col, expr
 from pyspark.sql.types import StructType
 
 from spark3.ethereum import Contract
-from spark3.providers import ContractABIProvider, EtherscanABIProvider
+from spark3.providers import IContractABIProvider, EtherscanABIProvider
 from spark3.exceptions import ColumnNotFoundInDataFrame
 
 
@@ -15,7 +17,9 @@ class Spark3:
         self.log_df = spark.sql("select * from ethereum.logs_optimize")
         self._transformer = Transformer()
 
-    def contract(self, address: str, abi: str = None, abi_provider: ContractABIProvider = None):
+    def contract(self, address: str,
+                 abi: Optional[str] = None,
+                 abi_provider: Optional[IContractABIProvider] = None):
         """
         If abi is provided, then this method will return an instance of the contract defined by abi
 

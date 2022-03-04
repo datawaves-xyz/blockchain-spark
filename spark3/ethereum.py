@@ -24,7 +24,7 @@ from spark3.exceptions import (
     TypeNotSupported
 )
 
-from spark3.providers import ContractABIProvider
+from spark3.providers import IContractABIProvider
 
 
 # ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
@@ -51,7 +51,10 @@ abi_to_spark_type: Dict[str, DataType] = {
 
 
 class Contract:
-    def __init__(self, spark3, address: str, abi: Optional[str] = None, abi_provider: Optional[ContractABIProvider] = None):
+    def __init__(self, spark3,
+                 address: str,
+                 abi: Optional[str] = None,
+                 abi_provider: Optional[IContractABIProvider] = None):
         self.spark3 = spark3
 
         self.address = address
@@ -64,7 +67,7 @@ class Contract:
         self._event_schema = None
 
     @functools.cached_property
-    def abi(self) -> Dict:
+    def abi(self) -> List[Dict[str, Any]]:
         return json.loads(self.abi_json)
 
     @property
