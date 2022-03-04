@@ -2,7 +2,7 @@ import re
 import json
 import functools
 
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from pyspark.sql.functions import col
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
@@ -51,13 +51,17 @@ abi_to_spark_type: Dict[str, DataType] = {
 
 
 class Contract:
-    def __init__(self, spark3, address: str, abi: str = None, abi_provider: ContractABIProvider = None):
+    def __init__(self, spark3, address: str, abi: Optional[str] = None, abi_provider: Optional[ContractABIProvider] = None):
         self.spark3 = spark3
+
         self.address = address
         self._abi_json = abi
         self._abi_provider = abi_provider
         if abi is None and abi_provider is None:
             raise ValueError("Either abi or abi_provider should be provided")
+        
+        self._function_schema = None
+        self._event_schema = None
 
     @functools.cached_property
     def abi(self) -> Dict:
@@ -73,17 +77,57 @@ class Contract:
 
         raise ContractABINotConfigured()
 
-    def get_function_schema_by_name(self, func_name):
-        return get_function_schema(self.abi).get(func_name)
+    @property
+    def function_schema(self) -> Dict[str, StructType]:
+        if self._function_schema is None:
+            self._function_schema = get_function_schema(self.abi)
+        return self._function_schema
 
-    def get_event_schema_by_name(self, event_name):
-        return get_event_schema(self.abi).get(event_name)
+    @property
+    def event_schema(self) -> Dict[str, StructType]:
+        if self._event_schema is None:
+            self._event_schema = get_event_schema(self.abi)
+        return self._event_schema
 
-    def get_function_by_name(self, name) -> DataFrame:
-        return self.all_functions[name]
+    def get_function_by_name(self, name: str) -> DataFrame:
+        schema = self.function_schema.get(name)
+        if schema is None:
+            raise FunctionOrEventNotInContractABI()
 
-    def get_event_by_name(self, name) -> DataFrame:
-        return self.all_events[name]
+        df = self.spark3.trace_df
+
+        if len([col_name for col_name, col_type in df.dtypes if
+                col_name == "to_address" and col_type == "string"]) != 1:
+            raise ColumnNotFoundInDataFrame("to_address(string)", df)
+
+        df = df.filter(col("to_address") == self.address)
+
+        return self.spark3.transformer().parse_trace_to_function(
+            df,
+            self._get_abi_item_json(name),
+            schema,
+            name
+        )
+
+    def get_event_by_name(self, name: str) -> DataFrame:
+        schema = self.event_schema.get(name)
+        if schema is None:
+            raise FunctionOrEventNotInContractABI()
+
+        df = self.spark3.log_df
+
+        if len([col_name for col_name, col_type in df.dtypes if
+                col_name == "address" and col_type == "string"]) != 1:
+            raise ColumnNotFoundInDataFrame("address(string)", df)
+
+        df = df.filter(col("address") == self.address)
+
+        return self.spark3.transformer().parse_log_to_event(
+            df,
+            self._get_abi_item_json(name),
+            schema,
+            name
+        )
 
     def _get_abi_item_json(self, name):
         abi_list = [x for x in self.abi
@@ -94,35 +138,11 @@ class Contract:
 
     @functools.cached_property
     def all_functions(self) -> Dict[str, DataFrame]:
-        function_schema_map = get_function_schema(self.abi)
-
-        df = self.spark3.trace_df
-
-        if len([col_name for col_name, col_type in df.dtypes if
-                col_name == "to_address" and col_type == "string"]) != 1:
-            raise ColumnNotFoundInDataFrame("to_address(string)", df)
-
-        df = df.filter(col("to_address") == self.address)
-
-        return {name: self.spark3.transformer().parse_trace_to_function(
-            df, self._get_abi_item_json(name), schema, name)
-            for name, schema in function_schema_map.items()}
+        return {name: self.get_function_by_name(name) for name in self.function_schema.keys()}
 
     @functools.cached_property
     def all_events(self) -> Dict[str, DataFrame]:
-        event_schema_map = get_event_schema(self.abi)
-
-        df = self.spark3.log_df
-
-        if len([col_name for col_name, col_type in df.dtypes if
-                col_name == "address" and col_type == "string"]) != 1:
-            raise ColumnNotFoundInDataFrame("address(string)", df)
-
-        df = df.filter(col("address") == self.address)
-
-        return {name: self.spark3.transformer().parse_log_to_event(
-            df, self._get_abi_item_json(name), schema, name)
-            for name, schema in event_schema_map.items()}
+        return {name: self.get_event_by_name(name) for name in self.event_schema.keys()}
 
 
 def _get_spark_type_by_name(type_name: str) -> DataType:
@@ -137,7 +157,7 @@ def _get_spark_type_by_name(type_name: str) -> DataType:
         raise TypeNotSupported(type_name)
 
 
-def _flatten_schema_from_components(component_abi: [Dict[str, Any]]) -> StructType:
+def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> StructType:
     struct_type = StructType()
     for field in component_abi:
         # the default name of filed is 'param'
@@ -156,7 +176,7 @@ def _flatten_schema_from_components(component_abi: [Dict[str, Any]]) -> StructTy
     return struct_type
 
 
-def get_call_schema_map(abi: [Dict[str, Any]], mode: str) -> Dict:
+def get_call_schema_map(abi: List[Dict[str, Any]], mode: str) -> Dict:
     assert (mode == 'function' or mode == 'event')
 
     func_abi_list = [i for i in abi if i.get('type') == mode]
@@ -174,9 +194,9 @@ def get_call_schema_map(abi: [Dict[str, Any]], mode: str) -> Dict:
     return schemas_by_func_name
 
 
-def get_function_schema(abi: [Dict[str, Any]]) -> Dict[str, StructType]:
+def get_function_schema(abi: List[Dict[str, Any]]) -> Dict[str, StructType]:
     return get_call_schema_map(abi, 'function')
 
 
-def get_event_schema(abi: [Dict[str, Any]]) -> Dict[str, StructType]:
+def get_event_schema(abi: List[Dict[str, Any]]) -> Dict[str, StructType]:
     return get_call_schema_map(abi, 'event')

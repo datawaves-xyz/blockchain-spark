@@ -13,7 +13,7 @@ class Spark3:
     def __init__(self, spark: SparkSession):
         self.trace_df = spark.sql("select * from ethereum.traces")
         self.log_df = spark.sql("select * from ethereum.logs_optimize")
-        self._transformer = Transformer(spark)
+        self._transformer = Transformer()
 
     def contract(self, address: str, abi: str = None, abi_provider: ContractABIProvider = None):
         """
@@ -47,15 +47,13 @@ DECODE_CONTRACT_EVENT_UDF = "io.iftech.sparkudf.DecodeContractEventUDF"
 class Transformer:
     """Wraps the transform logic which are implemented using external Java UDF"""
 
-    def __init__(self, spark: SparkSession):
-        self.spark = spark
-
-    def parse_trace_to_function(self, df: DataFrame,
+    @staticmethod
+    def parse_trace_to_function(df: DataFrame,
                                 abi: str,
                                 schema: StructType,
                                 name: str) -> DataFrame:
 
-        self.spark.udf.registerJavaFunction("decode_func_%s" % name, DECODE_CONTRACT_FUNCTION_UDF, schema)
+        df.sql_ctx.udf.registerJavaFunction("decode_func_%s" % name, DECODE_CONTRACT_FUNCTION_UDF, schema)
 
         if len([col_name for col_name, col_type in df.dtypes if
                 col_name == "input" and col_type == "string"]) != 1:
@@ -70,12 +68,13 @@ class Transformer:
             .drop("func_name") \
             .filter(col('function_parameter').isNotNull())
 
-    def parse_log_to_event(self, df: DataFrame,
+    @staticmethod
+    def parse_log_to_event(df: DataFrame,
                            abi: str,
                            schema: StructType,
                            name: str) -> DataFrame:
 
-        self.spark.udf.registerJavaFunction("decode_evt_%s" % name, DECODE_CONTRACT_EVENT_UDF, schema)
+        df.sql_ctx.udf.registerJavaFunction("decode_evt_%s" % name, DECODE_CONTRACT_EVENT_UDF, schema)
 
         if len([col_name for col_name, col_type in df.dtypes if
                 col_name == "data" and col_type == "string"]) != 1:
