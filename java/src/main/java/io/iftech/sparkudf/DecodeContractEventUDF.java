@@ -1,9 +1,12 @@
 package io.iftech.sparkudf;
 
+import javax.annotation.concurrent.Immutable;
+
 import com.esaulpaugh.headlong.abi.Event;
 import com.esaulpaugh.headlong.abi.Tuple;
 import com.esaulpaugh.headlong.abi.TupleType;
 
+import org.apache.curator.shaded.com.google.common.collect.ImmutableList;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF4;
 import org.slf4j.Logger;
@@ -40,6 +43,7 @@ public class DecodeContractEventUDF implements UDF4<String, WrappedArray<String>
         } 
         TupleType tupleType = e.getInputs();
 
-        return ContractDecoder.buildRowFromTuple(tupleType, tuple);
+        return Row.fromSeq(ContractDecoder.convertListToSeq(ImmutableList.of(
+            ContractDecoder.buildRowFromTuple(tupleType, tuple))));
     }
 }
