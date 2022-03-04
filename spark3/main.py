@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import lit, col, expr
 from pyspark.sql.types import StructType
 
-from spark3.ethereum import Contract
+from spark3.ethereum.contract import Contract
 from spark3.providers import IContractABIProvider, EtherscanABIProvider
 from spark3.exceptions import ColumnNotFoundInDataFrame
 

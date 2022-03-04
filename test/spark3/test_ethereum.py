@@ -5,7 +5,7 @@ from typing import AnyStr
 from pyspark.sql.types import DataType, StructType
 
 import test.resources
-from spark3.ethereum import get_function_schema, get_event_schema
+from spark3.ethereum.contract import get_function_schema, get_event_schema
 
 RESOURCE_GROUP = 'ethereum_test'
 
@@ -32,15 +32,15 @@ class SchemaTestCase(unittest.TestCase):
         schema_map = get_function_schema(abi=abi)
         struct_type = schema_map['acceptBid']
 
-        self.assertEqual(deep_get_data_type('tokenId', struct_type).typeName(), 'decimal')
+        self.assertEqual(deep_get_data_type('tokenId', struct_type).typeName(), 'long')
         self.assertEqual(deep_get_data_type('bid', struct_type).typeName(), 'struct')
-        self.assertEqual(deep_get_data_type('bid.amount', struct_type).typeName(), 'decimal')
-        self.assertEqual(deep_get_data_type('bid.currency', struct_type).typeName(), 'string')
+        self.assertEqual(deep_get_data_type('bid.amount', struct_type).typeName(), 'long')
+        self.assertEqual(deep_get_data_type('bid.currency', struct_type).typeName(), 'long')
 
     def test_address_parse_as_string(self):
         abi = json.loads(_read_resource('trace_abi1.json'))
         struct_type = get_function_schema(abi=abi)['isApprovedForAll']
-        self.assertEqual(deep_get_data_type('owner', struct_type).typeName(), 'string')
+        self.assertEqual(deep_get_data_type('owner', struct_type).typeName(), 'long')
 
     def test_empty_function_inputs(self):
         abi = json.loads(_read_resource('trace_abi1.json'))
@@ -53,9 +53,9 @@ class SchemaTestCase(unittest.TestCase):
         abi = json.loads(_read_resource('log_abi2.json'))
         struct_type = get_event_schema(abi=abi)['AddLiquidity']
 
-        self.assertEqual(deep_get_data_type('provider', struct_type).typeName(), 'string')
+        self.assertEqual(deep_get_data_type('provider', struct_type).typeName(), 'long')
         self.assertEqual(deep_get_data_type('token_amounts', struct_type).typeName(), 'array')
-        self.assertEqual(deep_get_data_type('token_amounts', struct_type).elementType.typeName(), 'decimal')
+        self.assertEqual(deep_get_data_type('token_amounts', struct_type).elementType.typeName(), 'long')
         self.assertEqual(deep_get_data_type('fees', struct_type).typeName(), 'array')
-        self.assertEqual(deep_get_data_type('fees', struct_type).elementType.typeName(), 'decimal')
-        self.assertEqual(deep_get_data_type('invariant', struct_type).typeName(), 'decimal')
+        self.assertEqual(deep_get_data_type('fees', struct_type).elementType.typeName(), 'long')
+        self.assertEqual(deep_get_data_type('invariant', struct_type).typeName(), 'long')
