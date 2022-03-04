@@ -131,7 +131,7 @@ class Contract:
             name
         )
 
-    def _get_abi_item_json(self, name):
+    def _get_abi_item_json(self, name) -> str:
         abi_list = [x for x in self.abi
                     if x['type'] in ('function', 'event') and x['name'] == name]
         if len(abi_list) == 0:
