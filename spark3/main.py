@@ -10,14 +10,31 @@ from spark3.exceptions import ColumnNotFoundInDataFrame
 class Spark3:
     EtherscanABIProvider = EtherscanABIProvider
 
-    def __init__(self, spark: SparkSession, provider: ContractABIProvider = None):
-        self.contractABIProvider = provider
+    def __init__(self, spark: SparkSession):
         self.trace_df = spark.sql("select * from ethereum.traces")
         self.log_df = spark.sql("select * from ethereum.logs_optimize")
         self._transformer = Transformer()
 
-    def contract(self, address: str):
-        return Contract(address, self)
+    def contract(self, address: str, abi: str = None, abi_provider: ContractABIProvider = None):
+        """
+        If abi is provided, then this method will return an instance of the contract defined by abi
+
+        >>> from spark3 import Spark3
+        >>>
+        >>> s3 = Spark3(...)
+        >>>
+        >>>> contract = s3.contract(address=..., abi=...)
+
+        If abi_provider is provided, then this method will return an instance of the contract defined by the
+        provider and a given address
+
+        >>> from spark3 import Spark3
+        >>>
+        >>> s3 = Spark3(...)
+        >>>
+        >>> contract = s3.contract(address=..., abi_provider=...)
+        """
+        return Contract(self, address, abi, abi_provider)
 
     def transformer(self):
         return self._transformer

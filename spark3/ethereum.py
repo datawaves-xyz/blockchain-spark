@@ -2,7 +2,7 @@ import re
 import json
 import functools
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from pyspark.sql.functions import col
 from pyspark.sql import DataFrame
 from pyspark.sql.types import (
@@ -23,6 +23,9 @@ from spark3.exceptions import (
     FunctionOrEventNotInContractABI,
     TypeNotSupported
 )
+
+from spark3.providers import ContractABIProvider
+
 
 # ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
 abi_to_spark_type: Dict[str, DataType] = {
@@ -48,15 +51,17 @@ abi_to_spark_type: Dict[str, DataType] = {
 
 
 class Contract:
-    def __init__(self, address: str, spark3):
-        self.address = address
+    def __init__(self, spark3, address: str, abi: Optional[str] = None, abi_provider: Optional[ContractABIProvider] = None):
         self.spark3 = spark3
-        self._abi_json = None
+
+        self.address = address
+        self._abi_json = abi
+        self._abi_provider = abi_provider
+        if abi is None and abi_provider is None:
+            raise ValueError("Either abi or abi_provider should be provided")
+        
         self._function_schema = None
         self._event_schema = None
-
-        if self.spark3.contractABIProvider is not None:
-            self._abi_json = self.spark3.contractABIProvider.get_contract_abi(self.address)
 
     @functools.cached_property
     def abi(self) -> Dict:
@@ -64,13 +69,13 @@ class Contract:
 
     @property
     def abi_json(self) -> str:
-        if self._abi_json is None:
-            raise ContractABINotConfigured()
-        return self._abi_json
+        if self._abi_json is not None:
+            return self._abi_json
 
-    @abi_json.setter
-    def abi_json(self, json):
-        self._abi_json = json
+        if self._abi_provider is not None:
+            return self._abi_provider.get_contract_abi(self.address)
+
+        raise ContractABINotConfigured()
 
     @property
     def function_schema(self) -> Dict[str, StructType]:

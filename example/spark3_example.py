@@ -7,9 +7,10 @@ sc = pyspark.SparkContext()
 spark = pyspark.SQLContext(sc)
 
 
-spark3 = Spark3(spark.sparkSession, Spark3.EtherscanABIProvider())
+spark3 = Spark3(spark.sparkSession)
 
-contract = spark3.contract("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b")
+contract = spark3.contract(address="0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
+                           abi_provider=Spark3.EtherscanABIProvider())
 df = contract.get_event_by_name('OrdersMatched')
 df.printSchema()
 
