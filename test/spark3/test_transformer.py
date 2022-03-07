@@ -45,3 +45,18 @@ class TransformerTestCase(PySparkTestCase):
         self.assertEqual(5, len(inputs['rssMetadata']))
         self.assertIsInstance(inputs['rssMetadata'][0], bytearray)
 
+    def test_function_output_can_decode(self):
+        abi = test.read_resource(RESOURCE_GROUP, 'opensea_abi.json')
+        spark = pyspark.SQLContext(self.sc)
+        trace_df = spark.read.option('multiline', 'true') \
+            .json(test.get_resource_path(RESOURCE_GROUP, 'opensea_trace.json'))
+        trace_df.show()
+
+        spark3 = Spark3(self.sc, trace_df, trace_df)
+        contract = spark3.contract(address='', abi=abi)
+        func_df = contract.get_function_by_name('validateOrder_')
+        results = func_df.collect()
+
+        self.assertEqual(2, len(results[0]['function_parameter']))
+        outputs = results[0]['function_parameter']['outputs']
+        self.assertEqual(True, outputs['_0'])

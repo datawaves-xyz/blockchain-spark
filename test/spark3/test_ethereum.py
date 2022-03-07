@@ -46,7 +46,6 @@ class SchemaTestCase(unittest.TestCase):
         abi = json.loads(_read_resource('trace_abi1.json'))
         schema_map = get_function_schema(abi=abi)
         struct_type = schema_map['MINT_WITH_SIG_TYPEHASH']
-        print(struct_type)
         self.assertEqual(deep_get_data_type('outputs._0', struct_type).typeName(), 'binary')
 
     # TODO est complex ABI type
