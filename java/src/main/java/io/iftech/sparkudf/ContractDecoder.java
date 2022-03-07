@@ -42,13 +42,14 @@ public class ContractDecoder {
                         case ABIType.TYPE_CODE_BIG_INTEGER:
                         case ABIType.TYPE_CODE_BOOLEAN:
                         case ABIType.TYPE_CODE_LONG:
+                        case ABIType.TYPE_CODE_BIG_DECIMAL:
                             values.add(tuple.get(i));
                             break;
 
                         case ABIType.TYPE_CODE_ADDRESS:
                             Address[] addressArray = (Address[]) tuple.get(i);
                             values.add(convertListToSeq(Arrays.stream(addressArray)
-                                    .map(x -> x.toString()).collect(Collectors.toList())));
+                                    .map(x -> x.value()).collect(Collectors.toList())));
                             break;
 
                         case ABIType.TYPE_CODE_BYTE:
@@ -96,12 +97,13 @@ public class ContractDecoder {
         switch (type.typeCode()) {
             case ABIType.TYPE_CODE_ADDRESS:
                 Address addr = (Address) val;
-                return addr.toString();
+                return addr.value();
             case ABIType.TYPE_CODE_INT:
             case ABIType.TYPE_CODE_BIG_INTEGER:
             case ABIType.TYPE_CODE_BOOLEAN:
             case ABIType.TYPE_CODE_LONG:
             case ABIType.TYPE_CODE_BYTE:
+            case ABIType.TYPE_CODE_BIG_DECIMAL:
 
                 return val;
             default:

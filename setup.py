@@ -43,6 +43,7 @@ setup(
     },
     test_requires=[
         'nose == 1.3.7',
-        'unittest2 >= 1.0.0'
+        'unittest2 >= 1.0.0',
+        'web3 == 5.28.0'
     ]
 )
