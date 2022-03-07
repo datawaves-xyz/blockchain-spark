@@ -37,6 +37,30 @@
       {
         "name": "ui64",
         "type": "uint64"
+      },
+      {
+        "name": "bool",
+        "type": "bool"
+      },
+      {
+        "name": "f128x20",
+        "type": "fixed128x20"
+      },
+      {
+        "name": "uf128x20",
+        "type": "ufixed128x20"
+      },
+      {
+        "name": "bytes",
+        "type": "bytes"
+      },
+      {
+        "name": "str",
+        "type": "string"
+      },
+      {
+        "name": "int8_array",
+        "type": "int8[6]"
       }
     ],
     "name": "AllTypeFunction",

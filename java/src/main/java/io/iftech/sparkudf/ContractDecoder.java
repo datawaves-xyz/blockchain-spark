@@ -3,6 +3,7 @@ package io.iftech.sparkudf;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.esaulpaugh.headlong.abi.ABIType;
@@ -49,7 +50,7 @@ public class ContractDecoder {
                         case ABIType.TYPE_CODE_ADDRESS:
                             Address[] addressArray = (Address[]) tuple.get(i);
                             values.add(convertListToSeq(Arrays.stream(addressArray)
-                                    .map(x -> x.value()).collect(Collectors.toList())));
+                                    .map(x -> x.toString().toLowerCase()).collect(Collectors.toList())));
                             break;
 
                         case ABIType.TYPE_CODE_BYTE:
@@ -97,7 +98,7 @@ public class ContractDecoder {
         switch (type.typeCode()) {
             case ABIType.TYPE_CODE_ADDRESS:
                 Address addr = (Address) val;
-                return addr.value();
+                return addr.toString().toLowerCase();
             case ABIType.TYPE_CODE_INT:
             case ABIType.TYPE_CODE_BIG_INTEGER:
             case ABIType.TYPE_CODE_BOOLEAN:

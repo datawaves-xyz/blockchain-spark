@@ -11,8 +11,8 @@ class TypeFactory:
         IntType(bit_length=256, unsigned=True, name='uint'),
         AddressType(),
         BoolType(),
-        FixedType(bit_length=256, scale=18, unsigned=False, name='fixed'),
-        FixedType(bit_length=256, scale=18, unsigned=True, name='ufixed'),
+        FixedType(bit_length=128, scale=18, unsigned=False, name='fixed'),
+        FixedType(bit_length=128, scale=18, unsigned=True, name='ufixed'),
         BytesType(name='bytes'),
         FunctionType(),
         StringType()
