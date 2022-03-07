@@ -12,9 +12,17 @@ from spark3.exceptions import ColumnNotFoundInDataFrame
 class Spark3:
     EtherscanABIProvider = EtherscanABIProvider
 
-    def __init__(self, spark: SparkSession):
-        self.trace_df = spark.sql("select * from ethereum.traces")
-        self.log_df = spark.sql("select * from ethereum.logs_optimize")
+    def __init__(self, spark: SparkSession,
+                 trace: DataFrame,
+                 log: DataFrame):
+        """
+        :param spark: :class:`SparkSession`
+        :param trace: :class:`DataFrame` to store original data to decode contract functions
+        :param log: :class:`DataFrame` to store original data to decode contract events
+        """
+        self.spark = spark
+        self.trace_df = trace
+        self.log_df = log
         self._transformer = Transformer()
 
     def contract(self, address: str,

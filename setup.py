@@ -11,7 +11,7 @@ long_description = read('README.md') if os.path.isfile("README.md") else ""
 
 setup(
     name='blockchain-spark',
-    version='0.3.0beta1',
+    version='0.3.0b2',
     author='songv',
     author_email='songwei@iftech.io',
     description='Spark extension utils for blockchain',
@@ -41,4 +41,8 @@ setup(
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
         'Source': 'https://github.com/tellery/blockchain-spark',
     },
+    test_requires=[
+        'nose == 1.3.7',
+        'unittest2 >= 1.0.0'
+    ]
 )
