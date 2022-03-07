@@ -9,16 +9,16 @@ from spark3.ethereum.type_factory import TypeFactory
 class TypeFactoryTestCase(unittest.TestCase):
     def test_int_type(self):
         test_type_map: Dict[str, DataType] = {
-            'int': LongType(),
-            'uint': LongType(),
-            'int8': ByteType(),
-            'uint8': ShortType(),
-            'int16': ShortType(),
+            'int': DecimalType(38, 0),
+            'uint': DecimalType(38, 0),
+            'int8': IntegerType(),
+            'uint8': IntegerType(),
+            'int16': IntegerType(),
             'uint16': IntegerType(),
             'int32': IntegerType(),
             'uint32': LongType(),
-            'int248': LongType(),
-            'uint248': LongType()
+            'int248': DecimalType(38, 0),
+            'uint248': DecimalType(38, 0)
         }
 
         for atype, stype in test_type_map.items():
@@ -26,10 +26,10 @@ class TypeFactoryTestCase(unittest.TestCase):
 
     def test_fixed_type(self):
         test_type_map: Dict[str, DataType] = {
-            'fixed': DecimalType(256, 18),
-            'ufixed': DecimalType(257, 18),
-            'fixed8x20': DecimalType(8, 20),
-            'ufixed8x20': DecimalType(9, 20),
+            'fixed': DecimalType(38, 18),
+            'ufixed': DecimalType(38, 18),
+            'fixed8x20': DecimalType(3, 3),
+            'ufixed8x20': DecimalType(3, 3),
         }
 
         for atype, stype in test_type_map.items():
@@ -37,7 +37,7 @@ class TypeFactoryTestCase(unittest.TestCase):
 
     def test_other_base_type(self):
         test_type_map: Dict[str, DataType] = {
-            'address': LongType(),
+            'address': StringType(),
             'bool': BooleanType(),
             'bytes': BinaryType(),
             'bytes30': BinaryType(),
@@ -51,7 +51,7 @@ class TypeFactoryTestCase(unittest.TestCase):
     def test_array_type(self):
         test_type_map: Dict[str, DataType] = {
             'uint32[2]': ArrayType(LongType()),
-            'fixed80x50[10]': ArrayType(DecimalType(80, 50)),
+            'fixed80x50[10]': ArrayType(DecimalType(25, 25)),
             'string[5]': ArrayType(StringType()),
             'bytes20[7]': ArrayType(BinaryType())
         }
