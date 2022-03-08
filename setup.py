@@ -41,7 +41,7 @@ setup(
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
         'Source': 'https://github.com/tellery/blockchain-spark',
     },
-    test_requires=[
+    tests_require=[
         'nose == 1.3.7',
         'unittest2 >= 1.0.0',
         'web3 == 5.28.0'
