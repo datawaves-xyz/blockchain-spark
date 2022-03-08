@@ -8,7 +8,7 @@ import test
 from spark3 import Spark3
 from test.spark3.utils import PySparkTestCase
 
-RESOURCE_GROUP = 'transform_test'
+RESOURCE_GROUP = 'contract_test'
 
 
 def _get_resource_path(file_name: str) -> AnyStr:
@@ -25,7 +25,7 @@ mock_address = "0x40b39bacd1658fffa015468ba88303f3d67a8740"
 
 class TransformerTestCase(PySparkTestCase):
 
-    def test_parse_logs_to_function(self):
+    def test_get_function_by_name(self):
         # Mock traces dataframe
         w3 = Web3()
         abi_str = _read_resource('log_abi1.json')
@@ -46,8 +46,12 @@ class TransformerTestCase(PySparkTestCase):
                 Decimal('-10000.2000'),
                 Decimal('1000.2000'),
                 bytes('hello world', 'UTF-8'),
+                bytes('hi', 'UTF-8'),
                 'This is a test',
                 [1, 2, 3, 4, 5, -8],
+                [bytes('test1', 'UTF-8'), bytes('test2', 'UTF-8')],
+                [True, True, True, True, True, False, False, False, False, True],
+                {'key': 'test', 'value': 1234}
             ])
         df = self.sc \
             .parallelize([(data, "", mock_contract_address)]) \
@@ -73,8 +77,14 @@ class TransformerTestCase(PySparkTestCase):
         self.assertTrue(Decimal('-10000.20000000000000000000').compare(input['f128x20']) == 0)
         self.assertTrue(Decimal('1000.20000000000000000000').compare(input['uf128x20']) == 0)
         self.assertEqual(input['bytes'], bytes('hello world', 'UTF-8'))
+        self.assertEqual(input['bytes10'], bytes('hi\x00\x00\x00\x00\x00\x00\x00\x00', 'UTF-8'))
         self.assertEqual(input['str'], 'This is a test')
         self.assertEqual(input['int8_array'], [1, 2, 3, 4, 5, -8])
+        self.assertEqual(input['bytes12_array'], [bytes('test1\x00\x00\x00\x00\x00\x00\x00', 'UTF-8'),
+                                                  bytes('test2\x00\x00\x00\x00\x00\x00\x00', 'UTF-8')])
+        self.assertEqual(input['bool_array'], [True, True, True, True, True, False, False, False, False, True])
+        self.assertEqual(input['tuple']['key'], 'test')
+        self.assertEqual(input['tuple']['value'], 1234)
 
         input_schema = {field['name']: field['type'] for field in
                         new_df.schema.fields[1].dataType.jsonValue()['fields'][0]['type']['fields']}
@@ -91,6 +101,15 @@ class TransformerTestCase(PySparkTestCase):
         self.assertEqual(input_schema['f128x20'], 'decimal(38,20)')
         self.assertEqual(input_schema['uf128x20'], 'decimal(38,20)')
         self.assertEqual(input_schema['bytes'], 'binary')
+        self.assertEqual(input_schema['bytes10'], 'binary')
         self.assertEqual(input_schema['str'], 'string')
         self.assertEqual(input_schema['int8_array']['type'], 'array')
         self.assertEqual(input_schema['int8_array']['elementType'], 'integer')
+        self.assertEqual(input_schema['bytes12_array']['type'], 'array')
+        self.assertEqual(input_schema['bytes12_array']['elementType'], 'binary')
+        self.assertEqual(input_schema['bool_array']['type'], 'array')
+        self.assertEqual(input_schema['bool_array']['elementType'], 'boolean')
+
+        tuple_schema = {i['name']: i['type'] for i in input_schema['tuple']['fields']}
+        self.assertEqual(tuple_schema['key'], 'string')
+        self.assertEqual(tuple_schema['value'], 'decimal(38,0)')

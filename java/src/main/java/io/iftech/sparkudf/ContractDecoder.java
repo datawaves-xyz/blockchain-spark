@@ -3,7 +3,6 @@ package io.iftech.sparkudf;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import com.esaulpaugh.headlong.abi.ABIType;

@@ -55,12 +55,38 @@
         "type": "bytes"
       },
       {
+        "name": "bytes10",
+        "type": "bytes10"
+      },
+      {
         "name": "str",
         "type": "string"
       },
       {
         "name": "int8_array",
         "type": "int8[6]"
+      },
+      {
+        "name": "bytes12_array",
+        "type": "bytes12[2]"
+      },
+      {
+        "name": "bool_array",
+        "type": "bool[10]"
+      },
+      {
+        "components": [
+          {
+            "name": "value",
+            "type": "uint256"
+          },
+          {
+            "name": "key",
+            "type": "string"
+          }
+        ],
+        "name": "tuple",
+        "type": "tuple"
       }
     ],
     "name": "AllTypeFunction",
