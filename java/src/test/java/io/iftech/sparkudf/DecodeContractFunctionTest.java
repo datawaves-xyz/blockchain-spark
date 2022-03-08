@@ -49,7 +49,7 @@ public class DecodeContractFunctionTest {
     Row input =  result.getStruct(0);
     assertEquals("This is a string", input.get(0));
     assertEquals(BigInteger.valueOf(100000000000L), input.get(1));
-    assertEquals("0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b", input.getString(2));
+    assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b", input.getString(2));
     assertArrayEquals(new byte[] { 0, 1, 1, 0 }, (byte[]) input.get(3));
     assertEquals(true, input.getBoolean(4));
     assertArrayEquals(new byte[] { 9, 9 }, (byte[]) input.get(5));
@@ -78,7 +78,7 @@ public class DecodeContractFunctionTest {
     Row result = udf.call(FastHex.encodeToString(bytes.array()), "", gson.toJson(f), "test_function");
     Row input =  result.getStruct(0);
     assertArrayEquals(new int[] { 17, 19 }, (int[]) input.get(0));
-    assertEquals(ImmutableList.of("0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b"), input.getList(1));
+    assertEquals(ImmutableList.of("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"), input.getList(1));
     assertArrayEquals(new BigInteger[] { BigInteger.valueOf(400000000000L) }, (BigInteger[]) input.get(2));
     assertArrayEquals(new byte[] { 0, 1, 1, 0 }, (byte[]) input.getList(3).get(0));
     assertEquals(1, result.length());

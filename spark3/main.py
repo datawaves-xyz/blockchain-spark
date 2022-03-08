@@ -4,17 +4,17 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import lit, col, expr
 from pyspark.sql.types import StructType
 
-from spark3.ethereum import Contract
-from spark3.providers import IContractABIProvider, EtherscanABIProvider
+from spark3.ethereum.contract import Contract
 from spark3.exceptions import ColumnNotFoundInDataFrame
+from spark3.providers import IContractABIProvider, EtherscanABIProvider
 
 
 class Spark3:
     EtherscanABIProvider = EtherscanABIProvider
 
     def __init__(self, spark: SparkSession,
-                 trace: DataFrame,
-                 log: DataFrame):
+                 trace: Optional[DataFrame] = None,
+                 log: Optional[DataFrame] = None):
         """
         :param spark: :class:`SparkSession`
         :param trace: :class:`DataFrame` to store original data to decode contract functions
@@ -79,8 +79,7 @@ class Transformer:
             .drop("abi") \
             .drop("input") \
             .drop("output") \
-            .drop("func_name") \
-
+            .drop("func_name")
 
     @staticmethod
     def parse_log_to_event(df: DataFrame,

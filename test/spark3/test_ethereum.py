@@ -5,7 +5,7 @@ from typing import AnyStr
 from pyspark.sql.types import DataType, StructType
 
 import test.resources
-from spark3.ethereum import get_function_schema, get_event_schema
+from spark3.ethereum.contract import get_function_schema, get_event_schema
 
 RESOURCE_GROUP = 'ethereum_test'
 

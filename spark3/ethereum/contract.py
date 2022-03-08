@@ -1,52 +1,20 @@
-import re
-import json
 import functools
-
+import json
 from typing import Dict, Any, List, Optional
-from pyspark.sql.functions import col
+
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import col
 from pyspark.sql.types import (
-    StructType,
-    LongType,
-    IntegerType,
-    DataType,
-    StringType,
-    BooleanType,
-    ArrayType,
-    BinaryType,
-    DecimalType
+    StructType
 )
 
+from spark3.ethereum.type_factory import TypeFactory
 from spark3.exceptions import (
     ColumnNotFoundInDataFrame,
     ContractABINotConfigured,
-    FunctionOrEventNotInContractABI,
-    TypeNotSupported
+    FunctionOrEventNotInContractABI
 )
-
 from spark3.providers import IContractABIProvider
-
-# ABI types: https://docs.soliditylang.org/en/v0.8.11/abi-spec.html#types
-abi_to_spark_type: Dict[str, DataType] = {
-    r'^uint256$': DecimalType(precision=38),
-    r'^int256$': DecimalType(precision=38),
-    r'^uint128$': DecimalType(precision=38),
-    r'^int128$': DecimalType(precision=38),
-    r'^uint64$': LongType(),
-    r'^int64$': LongType(),
-    r'^uint32$': LongType(),
-    r'^int32$': LongType(),
-    r'^uint16$': IntegerType(),
-    r'^int16$': IntegerType(),
-    r'^uint8$': IntegerType(),
-    r'^int8$': IntegerType(),
-    r'^address$': StringType(),
-    r'^bool$': BooleanType(),
-    r'^fixed.*x[^\[\]]*$': DecimalType(),
-    r'^ufixed.*x[^\[\]]*$': DecimalType(),
-    r'^bytes[^\[\]]*$': BinaryType(),
-    r'^string$': StringType()
-}
 
 
 class Contract:
@@ -147,18 +115,6 @@ class Contract:
         return {name: self.get_event_by_name(name) for name in self.event_schema.keys()}
 
 
-def _get_spark_type_by_name(type_name: str) -> DataType:
-    for regex_str, data_type in abi_to_spark_type.items():
-        if re.search(regex_str, type_name) is not None:
-            return data_type
-
-    array_reg = re.search(r'\[[\d]*\]$', type_name)
-    if array_reg:
-        return ArrayType(_get_spark_type_by_name(type_name[:array_reg.start()]))
-    else:
-        raise TypeNotSupported(type_name)
-
-
 def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> StructType:
     struct_type = StructType()
     for idx, field in enumerate(component_abi):
@@ -166,14 +122,13 @@ def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> Stru
         fname = field.get('name') if len(field.get('name', '')) > 0 else f'_{idx}'
         ftype = field.get('type')
         if ftype != 'tuple':
-            struct_type.add(field=fname, data_type=_get_spark_type_by_name(ftype),
+            struct_type.add(field=fname,
+                            data_type=TypeFactory.abi_type_to_spark_type(ftype),
                             metadata={'type': ftype})
         else:
-            struct_type.add(
-                field=fname,
-                data_type=_flatten_schema_from_components(component_abi=field.get('components')),
-                metadata={'type': ftype},
-            )
+            struct_type.add(field=fname,
+                            data_type=_flatten_schema_from_components(component_abi=field.get('components')),
+                            metadata={'type': ftype})
 
     return struct_type
 
