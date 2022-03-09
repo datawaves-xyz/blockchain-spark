@@ -20,7 +20,7 @@ def _read_resource(file_name: str) -> AnyStr:
 class UtilsTestCase(unittest.TestCase):
 
     def test_normalize_abi_for_function(self):
-        abi: ABI = normalize_abi(_read_resource('log_abi1.json'))
+        abi: ABI = normalize_abi(_read_resource('abi1.json'))
 
         func : ABIFunction = abi[0]
         self.assertEqual('function', func['type'])
@@ -40,7 +40,7 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual('value', c1['name'])
 
     def test_filter_by_name(self):
-        abi: ABI = normalize_abi(_read_resource('log_abi1.json'))
+        abi: ABI = normalize_abi(_read_resource('abi1.json'))
 
         filtered = filter_by_name('AllTypeFunction', abi)
         self.assertEqual(1, len(filtered))
@@ -50,7 +50,7 @@ class UtilsTestCase(unittest.TestCase):
         self.assertEqual(0, len(filtered))
 
     def test_filter_by_type(self):
-        abi: ABI = normalize_abi(_read_resource('log_abi1.json'))
+        abi: ABI = normalize_abi(_read_resource('abi1.json'))
 
         filtered = filter_by_type('function', abi)
         self.assertEqual(1, len(filtered))

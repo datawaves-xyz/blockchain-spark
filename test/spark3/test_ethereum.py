@@ -1,11 +1,13 @@
-import json
 import unittest
+import test.resources
+
 from typing import AnyStr
 
 from pyspark.sql.types import DataType, StructType
 
-import test.resources
-from spark3.ethereum.contract import get_function_schema, get_event_schema
+from spark3.ethereum.contract import get_call_schema_map
+from spark3.types import ABIElement
+from spark3.utils.abi import normalize_abi, filter_by_name
 
 RESOURCE_GROUP = 'ethereum_test'
 
@@ -25,12 +27,16 @@ def deep_get_data_type(path: str, dtype: StructType) -> DataType:
         deep_get_data_type('.'.join(split_path[1:]), item_type)
 
 
+def get_abi_element_from_resource(file_name: str, name: str) -> ABIElement:
+    return filter_by_name(name, normalize_abi(_read_resource(file_name)))[0]
+
+
 class SchemaTestCase(unittest.TestCase):
 
     def test_get_function_call_schema(self):
-        abi = json.loads(_read_resource('trace_abi1.json'))
-        schema_map = get_function_schema(abi=abi)
-        struct_type = schema_map['acceptBid']
+        struct_type = get_call_schema_map(
+            get_abi_element_from_resource('trace_abi1.json', 'acceptBid'),
+        )
 
         self.assertEqual(deep_get_data_type('inputs.tokenId', struct_type).typeName(), 'decimal')
         self.assertEqual(deep_get_data_type('inputs.bid', struct_type).typeName(), 'struct')
@@ -38,21 +44,21 @@ class SchemaTestCase(unittest.TestCase):
         self.assertEqual(deep_get_data_type('inputs.bid.currency', struct_type).typeName(), 'string')
 
     def test_address_parse_as_string(self):
-        abi = json.loads(_read_resource('trace_abi1.json'))
-        struct_type = get_function_schema(abi=abi)['isApprovedForAll']
+        struct_type = get_call_schema_map(
+            get_abi_element_from_resource('trace_abi1.json', 'isApprovedForAll')
+        )
         self.assertEqual(deep_get_data_type('inputs.owner', struct_type).typeName(), 'string')
 
     def test_function_outputs(self):
-        abi = json.loads(_read_resource('trace_abi1.json'))
-        schema_map = get_function_schema(abi=abi)
-        struct_type = schema_map['MINT_WITH_SIG_TYPEHASH']
-        print(struct_type)
+        struct_type = get_call_schema_map(
+            get_abi_element_from_resource('trace_abi1.json', 'MINT_WITH_SIG_TYPEHASH')
+        )
         self.assertEqual(deep_get_data_type('outputs._0', struct_type).typeName(), 'binary')
 
-    # TODO est complex ABI type
     def test_get_function_call_schema2(self):
-        abi = json.loads(_read_resource('log_abi2.json'))
-        struct_type = get_event_schema(abi=abi)['AddLiquidity']
+        struct_type = get_call_schema_map(
+            get_abi_element_from_resource('log_abi2.json', 'AddLiquidity')
+        )
 
         self.assertEqual(deep_get_data_type('inputs.provider', struct_type).typeName(), 'string')
         self.assertEqual(deep_get_data_type('inputs.token_amounts', struct_type).typeName(), 'array')

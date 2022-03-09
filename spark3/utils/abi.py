@@ -16,12 +16,5 @@ def filter_by_type(_type: str, contract_abi: ABI) -> List[ABIElement]:
 
 
 def filter_by_name(name: str, contract_abi: ABI) -> List[ABIElement]:
-    return [
-        abi
-        for abi
-        in contract_abi
-        if (
-                abi['type'] not in ('fallback', 'constructor', 'receive')
-                and abi['name'] == name
-        )
-    ]
+    return [abi for abi in contract_abi
+            if (abi['type'] not in ('fallback', 'constructor', 'receive') and abi['name'] == name)]
