@@ -1,6 +1,6 @@
 import unittest
 
-from spark3.utils import hash_unsafe_bytes
+from datawaves.utils import hash_unsafe_bytes
 
 
 class UtilsTest(unittest.TestCase):

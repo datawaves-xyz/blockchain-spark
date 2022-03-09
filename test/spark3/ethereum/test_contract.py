@@ -7,9 +7,9 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 from web3 import Web3
 
 import test
+from datawaves.ethereum.condition import new_trace_conditions
+from datawaves.utils import hash_unsafe_bytes
 from spark3 import Spark3
-from spark3.ethereum.condition import Conditions
-from spark3.utils import hash_unsafe_bytes
 from test.spark3.utils import PySparkTestCase
 
 RESOURCE_GROUP = 'contract_test'
@@ -78,7 +78,7 @@ class ContractTestCase(PySparkTestCase):
         spark3 = Spark3(
             spark=self.sql.sparkSession,
             trace=df,
-            trace_conditions=Conditions.new_datawave_trace_condition()
+            trace_conditions=new_trace_conditions()
         )
         contract = spark3.contract(address=mock_contract_address, abi=abi_str)
         new_df = contract.get_function_by_name("AllTypeFunction")
