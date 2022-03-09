@@ -78,7 +78,7 @@ class ContractTestCase(PySparkTestCase):
         spark3 = Spark3(
             spark=self.sql.sparkSession,
             trace=df,
-            trace_condition=Conditions.new_datawave_trace_condition()
+            trace_conditions=Conditions.new_datawave_trace_condition()
         )
         contract = spark3.contract(address=mock_contract_address, abi=abi_str)
         new_df = contract.get_function_by_name("AllTypeFunction")

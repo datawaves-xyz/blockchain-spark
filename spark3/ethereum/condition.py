@@ -34,11 +34,20 @@ def return_hash_condition(alias: str, _type: str) -> Condition[str]:
 
 
 class Conditions:
+    """
+    Conditions class is for the `Contract.get_function_by_name` or the `Contract.get_event_by_name`,
+    it is a data selector for traces or logs dataframe, user must provide `address_condition` and `selector_condition`
+    because of these two method need to get the data in a specific function or event by conditions.
+
+    User can optionally provide `address_hash_condition` and `selector_hash_condition` to optimize the query speed if
+    the traces table or logs table has partition keys related to address and selector.
+    """
+
     def __init__(self,
                  ctype: str,
                  address_condition: Condition[str],
+                 selector_condition: Condition[Dict[str, any]],
                  address_hash_condition: Optional[Condition[str]] = None,
-                 selector_condition: Optional[Condition[Dict[str, any]]] = None,
                  selector_hash_condition: Optional[Condition[Dict[str, any]]] = None):
         if ctype != 'function' and ctype != 'event':
             raise TypeError('The column type must be "function" or "event"')
@@ -51,11 +60,10 @@ class Conditions:
 
     def act(self, df: DataFrame, address: str, single_abi: Dict[str, any]) -> DataFrame:
         result_df = self.address_condition.acts(df, address)
+        result_df = self.selector_condition.acts(result_df, single_abi)
 
         if self.address_hash_condition is not None:
             result_df = self.address_hash_condition.acts(result_df, address)
-        if self.selector_condition is not None:
-            result_df = self.selector_condition.acts(result_df, single_abi)
         if self.selector_hash_condition is not None:
             result_df = self.selector_hash_condition.acts(result_df, single_abi)
 

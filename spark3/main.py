@@ -16,27 +16,21 @@ class Spark3:
     def __init__(self, spark: SparkSession,
                  trace: Optional[DataFrame] = None,
                  log: Optional[DataFrame] = None,
-                 trace_condition: Optional[Conditions] = None,
-                 log_condition: Optional[Conditions] = None):
+                 trace_conditions: Optional[Conditions] = None,
+                 log_conditions: Optional[Conditions] = None):
         """
         :param spark: :class:`SparkSession`
         :param trace: :class:`DataFrame` to store original data to decode contract functions
         :param log: :class:`DataFrame` to store original data to decode contract events
+        :param trace_conditions: :class: `Conditions` to define the data selectors for trace table
+        :param log_conditions: :class: `Conditions` to define the log selectors for log table
         """
-        if trace is None and log is None:
-            raise ValueError('Either trace or log should be provided')
-
-        if trace is not None and trace_condition is None:
-            raise ValueError('Can not provide trace without trace condition')
-
-        if log is not None and log_condition is None:
-            raise ValueError('Can not provide log without log condition')
 
         self.spark = spark
         self.trace_df = trace
         self.log_df = log
-        self.trace_condition = trace_condition
-        self.log_condition = log_condition
+        self.trace_conditions = trace_conditions
+        self.log_conditions = log_conditions
         self._transformer = Transformer()
 
     def contract(self, address: str,

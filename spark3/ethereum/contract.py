@@ -57,30 +57,30 @@ class Contract:
         return self._event_schema
 
     def get_function_by_name(self, name: str) -> DataFrame:
-        if self.spark3.trace_df is None:
-            raise ValueError('Could not call get_function_by_name without trace dataframe')
+        if self.spark3.trace_df is None or self.spark3.trace_conditions is None:
+            raise ValueError('Could not call get_function_by_name without trace dataframe or trace conditions')
 
         schema = self.function_schema.get(name)
         if schema is None:
             raise FunctionOrEventNotInContractABI()
 
         function_abi = self._get_function_abi_item_json(name)
-        df = self.spark3.trace_condition \
+        df = self.spark3.trace_conditions \
             .act(self.spark3.trace_df, self.address, function_abi)
 
         return self.spark3.transformer() \
             .parse_trace_to_function(df, json.dumps(function_abi), schema, name)
 
     def get_event_by_name(self, name: str) -> DataFrame:
-        if self.spark3.log_df is None:
-            raise ValueError('Could not call get_event_by_name without log dataframe')
+        if self.spark3.log_df is None or self.spark3.log_conditions is None:
+            raise ValueError('Could not call get_event_by_name without log dataframe or log conditions')
 
         schema = self.event_schema.get(name)
         if schema is None:
             raise FunctionOrEventNotInContractABI()
 
         event_abi = self._get_event_abi_item_json(name)
-        df = self.spark3.log_condition \
+        df = self.spark3.log_conditions \
             .act(self.spark3.log_df, self.address, event_abi)
 
         return self.spark3.transformer() \
