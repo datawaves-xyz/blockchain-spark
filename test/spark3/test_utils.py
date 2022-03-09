@@ -19,3 +19,18 @@ class UtilsTest(unittest.TestCase):
             hash_unsafe_bytes('0x833b94afa97b7e763a86a3e83dcaf58603857371', 42),
             881193080
         )
+
+        self.assertEqual(
+            hash_unsafe_bytes('0xa9059cbb', 42),
+            599811580
+        )
+
+        self.assertEqual(
+            hash_unsafe_bytes('0x585bbd61', 42),
+            2119620790
+        )
+
+        self.assertEqual(
+            hash_unsafe_bytes('0x9e832315', 42),
+            -1624170860
+        )

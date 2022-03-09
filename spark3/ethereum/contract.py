@@ -66,10 +66,10 @@ class Contract:
 
         function_abi = self._get_function_abi_item_json(name)
         df = self.spark3.trace_condition \
-            .act(self.spark3.trace_df, self.address, json.loads(function_abi))
+            .act(self.spark3.trace_df, self.address, function_abi)
 
         return self.spark3.transformer() \
-            .parse_trace_to_function(df, function_abi, schema, name)
+            .parse_trace_to_function(df, json.dumps(function_abi), schema, name)
 
     def get_event_by_name(self, name: str) -> DataFrame:
         if self.spark3.log_df is None:
@@ -81,22 +81,22 @@ class Contract:
 
         event_abi = self._get_event_abi_item_json(name)
         df = self.spark3.log_condition \
-            .act(self.spark3.log_df, self.address, json.loads(event_abi))
+            .act(self.spark3.log_df, self.address, event_abi)
 
         return self.spark3.transformer() \
-            .parse_log_to_event(df, event_abi, schema, name)
+            .parse_log_to_event(df, json.dumps(event_abi), schema, name)
 
-    def _get_event_abi_item_json(self, name: str) -> str:
+    def _get_event_abi_item_json(self, name: str) -> Dict[str, any]:
         return self._get_abi_item_json(name, 'event')
 
-    def _get_function_abi_item_json(self, name: str) -> str:
+    def _get_function_abi_item_json(self, name: str) -> Dict[str, any]:
         return self._get_abi_item_json(name, 'function')
 
-    def _get_abi_item_json(self, name: str, _type: str) -> str:
+    def _get_abi_item_json(self, name: str, _type: str) -> Dict[str, any]:
         abi_list = [x for x in self.abi if x['type'] == _type and x['name'] == name]
         if len(abi_list) == 0:
             raise FunctionOrEventNotInContractABI()
-        return json.dumps(abi_list[0])
+        return abi_list[0]
 
     @functools.cached_property
     def all_functions(self) -> Dict[str, DataFrame]:

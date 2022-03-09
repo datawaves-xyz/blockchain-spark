@@ -1,4 +1,5 @@
 import ctypes
+import sys
 
 
 def _rshift(val: int, n: int) -> int:
@@ -35,12 +36,17 @@ def _fix_mix(h1: ctypes.c_int32, length: int) -> ctypes.c_int32:
 def _4_bytes_to_int(b: bytearray, offset: int, length: int) -> ctypes.c_int32:
     assert offset + 4 <= length
 
-    result = b[offset + 3] << 24 | \
-             b[offset + 2] << 16 | \
-             b[offset + 1] << 8 | \
-             b[offset + 0]
+    if sys.byteorder == 'little':
+        result = b[offset + 3] << 24 | \
+                 b[offset + 2] << 16 | \
+                 b[offset + 1] << 8 | \
+                 b[offset + 0]
+    else:
+        result = b[offset + 0] << 24 | \
+                 b[offset + 1] << 16 | \
+                 b[offset + 2] << 8 | \
+                 b[offset + 3]
 
-    # TODO: BigEndian reverse bytes
     return ctypes.c_int32(result)
 
 

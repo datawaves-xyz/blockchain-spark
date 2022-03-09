@@ -106,9 +106,9 @@ class ContractTestCase(PySparkTestCase):
         self.assertEqual(input['tuple']['key'], 'test')
         self.assertEqual(input['tuple']['value'], 1234)
 
-        input_schema_filed = [field for field in new_df.schema.fields if field.name == 'function_parameter'][0]
+        input_schema_field = [field for field in new_df.schema.fields if field.name == 'function_parameter'][0]
         input_schema = {field['name']: field['type'] for field in
-                        input_schema_filed.dataType.jsonValue()['fields'][0]['type']['fields']}
+                        input_schema_field.dataType.jsonValue()['fields'][0]['type']['fields']}
         self.assertEqual(input_schema['addr'], 'string')
         self.assertEqual(input_schema['i8'], 'integer')
         self.assertEqual(input_schema['i16'], 'integer')
