@@ -1,11 +1,15 @@
+import json
 from decimal import Decimal
 from typing import AnyStr
 
-from pyspark.sql.types import StructType, StructField, StringType
+from eth_utils import function_abi_to_4byte_selector, encode_hex
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 from web3 import Web3
 
 import test
 from spark3 import Spark3
+from spark3.ethereum.condition import Conditions
+from spark3.utils import hash_unsafe_bytes
 from test.spark3.utils import PySparkTestCase
 
 RESOURCE_GROUP = 'contract_test'
@@ -23,12 +27,12 @@ mock_contract_address = "0x4aB190Bc3c60678705Cd819a37E10Af7417AC89B"
 mock_address = "0x40b39bacd1658fffa015468ba88303f3d67a8740"
 
 
-class TransformerTestCase(PySparkTestCase):
+class ContractTestCase(PySparkTestCase):
 
     def test_get_function_by_name(self):
         # Mock traces dataframe
         w3 = Web3()
-        abi_str = _read_resource('log_abi1.json')
+        abi_str = _read_resource('abi1.json')
         c = w3.eth.contract(abi=abi_str)
         data = c.encodeABI(
             fn_name='AllTypeFunction',
@@ -53,13 +57,29 @@ class TransformerTestCase(PySparkTestCase):
                 [True, True, True, True, True, False, False, False, False, True],
                 {'key': 'test', 'value': 1234}
             ])
+
+        function_abi = json.loads(abi_str)[0]
+        selector = encode_hex(function_abi_to_4byte_selector(function_abi))
+
         df = self.sc \
-            .parallelize([(data, "", mock_contract_address)]) \
+            .parallelize([(data,
+                           "",
+                           mock_contract_address,
+                           abs(hash_unsafe_bytes(mock_contract_address)) % 10,
+                           selector,
+                           abs(hash_unsafe_bytes(selector)) % 10)]) \
             .toDF(schema=StructType([StructField("input", StringType()),
                                      StructField("output", StringType()),
-                                     StructField("to_address", StringType())]))
+                                     StructField("to_address", StringType()),
+                                     StructField("address_hash", IntegerType()),
+                                     StructField("selector", StringType()),
+                                     StructField("selector_hash", IntegerType())]))
 
-        spark3 = Spark3(spark=self.sql.sparkSession, trace=df, log=None)
+        spark3 = Spark3(
+            spark=self.sql.sparkSession,
+            trace=df,
+            trace_condition=Conditions.new_datawave_trace_condition()
+        )
         contract = spark3.contract(address=mock_contract_address, abi=abi_str)
         new_df = contract.get_function_by_name("AllTypeFunction")
 
@@ -86,8 +106,9 @@ class TransformerTestCase(PySparkTestCase):
         self.assertEqual(input['tuple']['key'], 'test')
         self.assertEqual(input['tuple']['value'], 1234)
 
+        input_schema_filed = [field for field in new_df.schema.fields if field.name == 'function_parameter'][0]
         input_schema = {field['name']: field['type'] for field in
-                        new_df.schema.fields[1].dataType.jsonValue()['fields'][0]['type']['fields']}
+                        input_schema_filed.dataType.jsonValue()['fields'][0]['type']['fields']}
         self.assertEqual(input_schema['addr'], 'string')
         self.assertEqual(input_schema['i8'], 'integer')
         self.assertEqual(input_schema['i16'], 'integer')

@@ -3,14 +3,12 @@ import json
 from typing import Dict, Any, List, Optional
 
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col
 from pyspark.sql.types import (
     StructType
 )
 
 from spark3.ethereum.type_factory import TypeFactory
 from spark3.exceptions import (
-    ColumnNotFoundInDataFrame,
     ContractABINotConfigured,
     FunctionOrEventNotInContractABI
 )
@@ -23,7 +21,6 @@ class Contract:
                  abi: Optional[str] = None,
                  abi_provider: Optional[IContractABIProvider] = None):
         self.spark3 = spark3
-
         self.address = address
         self._abi_json = abi
         self._abi_provider = abi_provider
@@ -60,48 +57,43 @@ class Contract:
         return self._event_schema
 
     def get_function_by_name(self, name: str) -> DataFrame:
+        if self.spark3.trace_df is None:
+            raise ValueError('Could not call get_function_by_name without trace dataframe')
+
         schema = self.function_schema.get(name)
         if schema is None:
             raise FunctionOrEventNotInContractABI()
 
-        df = self.spark3.trace_df
+        function_abi = self._get_function_abi_item_json(name)
+        df = self.spark3.trace_condition \
+            .act(self.spark3.trace_df, self.address, json.loads(function_abi))
 
-        if len([col_name for col_name, col_type in df.dtypes if
-                col_name == "to_address" and col_type == "string"]) != 1:
-            raise ColumnNotFoundInDataFrame("to_address(string)", df)
-
-        df = df.filter(col("to_address") == self.address)
-
-        return self.spark3.transformer().parse_trace_to_function(
-            df,
-            self._get_abi_item_json(name),
-            schema,
-            name
-        )
+        return self.spark3.transformer() \
+            .parse_trace_to_function(df, function_abi, schema, name)
 
     def get_event_by_name(self, name: str) -> DataFrame:
+        if self.spark3.log_df is None:
+            raise ValueError('Could not call get_event_by_name without log dataframe')
+
         schema = self.event_schema.get(name)
         if schema is None:
             raise FunctionOrEventNotInContractABI()
 
-        df = self.spark3.log_df
+        event_abi = self._get_event_abi_item_json(name)
+        df = self.spark3.log_condition \
+            .act(self.spark3.log_df, self.address, json.loads(event_abi))
 
-        if len([col_name for col_name, col_type in df.dtypes if
-                col_name == "address" and col_type == "string"]) != 1:
-            raise ColumnNotFoundInDataFrame("address(string)", df)
+        return self.spark3.transformer() \
+            .parse_log_to_event(df, event_abi, schema, name)
 
-        df = df.filter(col("address") == self.address)
+    def _get_event_abi_item_json(self, name: str) -> str:
+        return self._get_abi_item_json(name, 'event')
 
-        return self.spark3.transformer().parse_log_to_event(
-            df,
-            self._get_abi_item_json(name),
-            schema,
-            name
-        )
+    def _get_function_abi_item_json(self, name: str) -> str:
+        return self._get_abi_item_json(name, 'function')
 
-    def _get_abi_item_json(self, name) -> str:
-        abi_list = [x for x in self.abi
-                    if x['type'] in ('function', 'event') and x['name'] == name]
+    def _get_abi_item_json(self, name: str, _type: str) -> str:
+        abi_list = [x for x in self.abi if x['type'] == _type and x['name'] == name]
         if len(abi_list) == 0:
             raise FunctionOrEventNotInContractABI()
         return json.dumps(abi_list[0])

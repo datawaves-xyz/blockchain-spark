@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import lit, col, expr
 from pyspark.sql.types import StructType
 
+from spark3.ethereum.condition import Conditions
 from spark3.ethereum.contract import Contract
 from spark3.exceptions import ColumnNotFoundInDataFrame
 from spark3.providers import IContractABIProvider, EtherscanABIProvider
@@ -14,15 +15,28 @@ class Spark3:
 
     def __init__(self, spark: SparkSession,
                  trace: Optional[DataFrame] = None,
-                 log: Optional[DataFrame] = None):
+                 log: Optional[DataFrame] = None,
+                 trace_condition: Optional[Conditions] = None,
+                 log_condition: Optional[Conditions] = None):
         """
         :param spark: :class:`SparkSession`
         :param trace: :class:`DataFrame` to store original data to decode contract functions
         :param log: :class:`DataFrame` to store original data to decode contract events
         """
+        if trace is None and log is None:
+            raise ValueError('Either trace or log should be provided')
+
+        if trace is not None and trace_condition is None:
+            raise ValueError('Can not provide trace without trace condition')
+
+        if log is not None and log_condition is None:
+            raise ValueError('Can not provide log without log condition')
+
         self.spark = spark
         self.trace_df = trace
         self.log_df = log
+        self.trace_condition = trace_condition
+        self.log_condition = log_condition
         self._transformer = Transformer()
 
     def contract(self, address: str,
