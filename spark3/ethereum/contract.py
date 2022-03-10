@@ -1,18 +1,21 @@
 import functools
 import json
-from typing import Dict, Any, List, Optional
 
+from typing import Sequence, Dict, Optional
 from pyspark.sql import DataFrame
-from pyspark.sql.types import (
-    StructType
-)
+from pyspark.sql.types import StructType
 
-from spark3.ethereum.type_factory import TypeFactory
 from spark3.exceptions import (
     ContractABINotConfigured,
-    FunctionOrEventNotInContractABI
+    ABIFunctionNotFound,
+    ABIEventNotFound
 )
+
 from spark3.providers import IContractABIProvider
+from spark3.types import ABI
+from spark3.utils.abi import normalize_abi, filter_by_type, filter_by_name
+from spark3.ethereum.type_factory import TypeFactory
+from spark3.types import ABIElement, ABIFunctionElement
 
 
 class Contract:
@@ -22,49 +25,49 @@ class Contract:
                  abi_provider: Optional[IContractABIProvider] = None):
         self.spark3 = spark3
         self.address = address
-        self._abi_json = abi
         self._abi_provider = abi_provider
-        if abi is None and abi_provider is None:
-            raise ValueError("Either abi or abi_provider should be provided")
+        self._abi_json = abi
 
+        if self._abi_provider is not None:
+            self._abi_json = self._abi_provider.get_contract_abi(self.address)
+
+        if self._abi_json is None:
+            raise ContractABINotConfigured("Either an ABI or an ABI provider should be provided")
+
+        self._abi = normalize_abi(self._abi_json)
         self._function_schema = None
         self._event_schema = None
 
-    @functools.cached_property
-    def abi(self) -> List[Dict[str, Any]]:
-        return json.loads(self.abi_json)
+    def abi(self) -> ABI:
+        return self._abi
 
-    @property
     def abi_json(self) -> str:
-        if self._abi_json is not None:
-            return self._abi_json
-
-        if self._abi_provider is not None:
-            return self._abi_provider.get_contract_abi(self.address)
-
-        raise ContractABINotConfigured()
+        return self._abi_json
 
     @property
     def function_schema(self) -> Dict[str, StructType]:
         if self._function_schema is None:
-            self._function_schema = get_function_schema(self.abi)
+            self._function_schema = {x.get('name'): get_call_schema_map(x)
+                                     for x in filter_by_type('function', self._abi)}
         return self._function_schema
 
     @property
     def event_schema(self) -> Dict[str, StructType]:
         if self._event_schema is None:
-            self._event_schema = get_event_schema(self.abi)
+            self._event_schema = {x.get('name'): get_call_schema_map(x)
+                                  for x in filter_by_type('event', self._abi)}
         return self._event_schema
 
     def get_function_by_name(self, name: str) -> DataFrame:
         if self.spark3.trace_df is None or self.spark3.trace_conditions is None:
             raise ValueError('Could not call get_function_by_name without trace dataframe or trace conditions')
 
-        schema = self.function_schema.get(name)
-        if schema is None:
-            raise FunctionOrEventNotInContractABI()
+        abi_list = filter_by_name(name, filter_by_type('function', self._abi))
+        if len(abi_list) == 0:
+            raise ABIFunctionNotFound('{} not found in ABI'.format(name))
+        function_abi = abi_list[0]
+        schema = get_call_schema_map(function_abi)
 
-        function_abi = self._get_function_abi_item_json(name)
         df = self.spark3.trace_conditions \
             .act(self.spark3.trace_df, self.address, function_abi)
 
@@ -75,28 +78,17 @@ class Contract:
         if self.spark3.log_df is None or self.spark3.log_conditions is None:
             raise ValueError('Could not call get_event_by_name without log dataframe or log conditions')
 
-        schema = self.event_schema.get(name)
-        if schema is None:
-            raise FunctionOrEventNotInContractABI()
+        abi_list = filter_by_name(name, filter_by_type('event', self._abi))
+        if len(abi_list) == 0:
+            raise ABIEventNotFound('{} not found in ABI'.format(name))
+        event_abi = abi_list[0]
+        schema = get_call_schema_map(event_abi)
 
-        event_abi = self._get_event_abi_item_json(name)
         df = self.spark3.log_conditions \
             .act(self.spark3.log_df, self.address, event_abi)
 
         return self.spark3.transformer() \
             .parse_log_to_event(df, json.dumps(event_abi), schema, name)
-
-    def _get_event_abi_item_json(self, name: str) -> Dict[str, any]:
-        return self._get_abi_item_json(name, 'event')
-
-    def _get_function_abi_item_json(self, name: str) -> Dict[str, any]:
-        return self._get_abi_item_json(name, 'function')
-
-    def _get_abi_item_json(self, name: str, _type: str) -> Dict[str, any]:
-        abi_list = [x for x in self.abi if x['type'] == _type and x['name'] == name]
-        if len(abi_list) == 0:
-            raise FunctionOrEventNotInContractABI()
-        return abi_list[0]
 
     @functools.cached_property
     def all_functions(self) -> Dict[str, DataFrame]:
@@ -107,7 +99,7 @@ class Contract:
         return {name: self.get_event_by_name(name) for name in self.event_schema.keys()}
 
 
-def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> StructType:
+def _flatten_schema_from_components(component_abi: Sequence[ABIFunctionElement]) -> StructType:
     struct_type = StructType()
     for idx, field in enumerate(component_abi):
         # the default name for anonymous field is '_{idx}'
@@ -125,31 +117,16 @@ def _flatten_schema_from_components(component_abi: List[Dict[str, Any]]) -> Stru
     return struct_type
 
 
-def get_call_schema_map(abi: List[Dict[str, Any]], mode: str) -> Dict:
-    assert (mode == 'function' or mode == 'event')
+def get_call_schema_map(element: ABIElement) -> StructType:
+    """Ethereum schema helper for converting :class:`ABIElement` to :class:`StructType`"""
 
-    func_abi_list = [i for i in abi if i.get('type') == mode]
-    schemas_by_func_name = {}
-    for func_abi in func_abi_list:
-        func_name = func_abi.get('name')
+    struct_type = StructType()
 
-        s = StructType()
+    if len(element.get('inputs', [])) > 0:
+        struct_type.add(field='inputs',
+                        data_type=_flatten_schema_from_components(component_abi=element.get('inputs')))
 
-        if len(func_abi.get('inputs', [])) > 0:
-            s.add(field='inputs',
-                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('inputs')))
-
-        if len(func_abi.get('outputs', [])) > 0:
-            s.add(field='outputs',
-                  data_type=_flatten_schema_from_components(component_abi=func_abi.get('outputs')))
-
-        schemas_by_func_name[func_name] = s
-    return schemas_by_func_name
-
-
-def get_function_schema(abi: List[Dict[str, Any]]) -> Dict[str, StructType]:
-    return get_call_schema_map(abi, 'function')
-
-
-def get_event_schema(abi: List[Dict[str, Any]]) -> Dict[str, StructType]:
-    return get_call_schema_map(abi, 'event')
+    if len(element.get('outputs', [])) > 0:
+        struct_type.add(field='outputs',
+                        data_type=_flatten_schema_from_components(component_abi=element.get('outputs')))
+    return struct_type
