@@ -1,11 +1,12 @@
 # blockchain-spark: Blockchain Data Analysis using Spark
 
+[![Auto test](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml/badge.svg?branch=master&event=push)](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml)
+
 ## Using this Repo
 
 ### Building
 
-We use Maven for building Java UDFs used by Python library. 
-
+We use Maven for building Java UDFs used by Python library.
 
 To compile, run tests, and build jars:
 
@@ -37,7 +38,6 @@ spark = pyspark.SQLContext(sc)
 spark3 = Spark3(spark.sparkSession)
 ```
 
-
 Get the functions and events of a certain contract
 
 ```python
@@ -46,13 +46,11 @@ function = contract.get_function_by_name("function_name")
 event = contract.get_event_by_name("event_name")
 ```
 
-
 Display the first 100 lines of function call DataFrame
 
 ```python
 contract.get_function_by_name('atomicMatch_').filter('dt = "2022-01-01"').show()
 ```
-
 
 Aggregate on the event DataFrame
 
@@ -67,7 +65,6 @@ group by dt
 order by dt
 """).show()
 ```
-
 
 ### Transformer
 
