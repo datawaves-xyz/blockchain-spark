@@ -1,23 +1,22 @@
 package io.iftech.sparkudf;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.LinkedList;
-
 import com.esaulpaugh.headlong.abi.Function;
 import com.esaulpaugh.headlong.abi.Tuple;
-
+import java.nio.ByteBuffer;
+import java.util.LinkedList;
+import java.util.List;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.api.java.UDF4;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecodeContractFunctionUDF implements UDF4<String, String, String, String, Row> {
+public class DecodeContractFunctionUDF implements UDF4<byte[], byte[], String, String, Row> {
+
     private static final Logger LOG = LoggerFactory.getLogger(DecodeContractFunctionUDF.class);
 
     @Override
-    public Row call(String inputHex, String outputHex, String functionABI, String functionName) throws Exception {
+    public Row call(byte[] inputData, byte[] outputData, String functionABI, String functionName)
+        throws Exception {
 
         Function f = Function.fromJson(functionABI);
         if (!f.getName().equals(functionName)) {
@@ -29,7 +28,6 @@ public class DecodeContractFunctionUDF implements UDF4<String, String, String, S
         if (f.getInputs().size() > 0) {
 
             try {
-                byte[] inputData = ContractDecoder.decodeHexStartsWith0x(inputHex);
                 // See why BytesBuffer is useful:
                 // https://github.com/esaulpaugh/headlong/issues/34
                 Tuple inputTuple = f.decodeCall(ByteBuffer.wrap(inputData));
@@ -43,7 +41,6 @@ public class DecodeContractFunctionUDF implements UDF4<String, String, String, S
 
         if (f.getOutputs().size() > 0) {
             try {
-                byte[] outputData = ContractDecoder.decodeHexStartsWith0x(outputHex);
                 Tuple outputTuple = f.decodeReturn(ByteBuffer.wrap(outputData));
                 Row outputResult = ContractDecoder.buildRowFromTuple(f.getOutputs(), outputTuple);
                 values.add(outputResult);
