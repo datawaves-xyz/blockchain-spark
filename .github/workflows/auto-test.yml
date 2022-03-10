@@ -21,8 +21,8 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
+      - uses: actions/cache@v2
       - name: Cache python venv
-        uses: actions/cache@v2
         id: cache-venv
         with:
           path: ./.venv/
@@ -30,8 +30,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-venv-
         if: ${{ !env.ACT }}
+      - uses: actions/cache@v2
       - name: Cache local Maven repository
-        uses: actions/cache@v2
         id: cache-mvn
         with:
           path: ~/.m2/repository
