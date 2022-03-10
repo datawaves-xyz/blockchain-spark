@@ -32,7 +32,8 @@ setup(
     keywords='web3, pandas',
     python_requires='>=3.6,<4',
     install_requires=[
-        'requests>=2.16.0'
+        'requests>=2.16.0',
+        'eth-utils>=2.0.0'
     ],
     extras_require={
         'pyspark': ["pyspark==3.2.1"],

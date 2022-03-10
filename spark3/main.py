@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import lit, col, expr
 from pyspark.sql.types import StructType
 
+from spark3.ethereum.condition import Conditions
 from spark3.ethereum.contract import Contract
 from spark3.exceptions import ColumnNotFoundInDataFrame
 from spark3.providers import IContractABIProvider, EtherscanABIProvider
@@ -14,15 +15,22 @@ class Spark3:
 
     def __init__(self, spark: SparkSession,
                  trace: Optional[DataFrame] = None,
-                 log: Optional[DataFrame] = None):
+                 log: Optional[DataFrame] = None,
+                 trace_conditions: Optional[Conditions] = None,
+                 log_conditions: Optional[Conditions] = None):
         """
         :param spark: :class:`SparkSession`
         :param trace: :class:`DataFrame` to store original data to decode contract functions
         :param log: :class:`DataFrame` to store original data to decode contract events
+        :param trace_conditions: :class: `Conditions` to define the data selectors for trace table
+        :param log_conditions: :class: `Conditions` to define the log selectors for log table
         """
+
         self.spark = spark
         self.trace_df = trace
         self.log_df = log
+        self.trace_conditions = trace_conditions
+        self.log_conditions = log_conditions
         self._transformer = Transformer()
 
     def contract(self, address: str,
