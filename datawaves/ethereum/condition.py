@@ -4,11 +4,11 @@ from datawaves.utils import hash_unsafe_bytes
 from spark3.ethereum.condition import Condition, Conditions
 
 
-def _return_self_condition(alias: str, _type: str) -> Condition[str]:
+def _return_self_condition(alias: str, _type: str) -> Condition[str, str]:
     return Condition(key_alias=alias, key_type=_type, transform=lambda x: x)
 
 
-def _return_hash_condition(alias: str, _type: str) -> Condition[str]:
+def _return_hash_condition(alias: str, _type: str) -> Condition[str, int]:
     return Condition(key_alias=alias, key_type=_type, transform=lambda x: abs(hash_unsafe_bytes(x)) % 10)
 
 
@@ -31,7 +31,6 @@ def new_trace_conditions():
     )
 
     return Conditions(
-        ctype='function',
         address_condition=_return_self_condition('to_address', 'string'),
         address_hash_condition=_return_hash_condition('address_hash', 'int'),
         selector_condition=default_trace_function_selector_condition,
@@ -58,7 +57,6 @@ def new_log_conditions():
     )
 
     return Conditions(
-        ctype='event',
         address_condition=_return_self_condition('address', 'string'),
         address_hash_condition=_return_hash_condition('address_hash', 'int'),
         selector_condition=default_log_event_selector_condition,

@@ -6,10 +6,11 @@ from pyspark.sql.functions import col
 from spark3.exceptions import ColumnNotFoundInDataFrame
 
 T = TypeVar('T')
+S = TypeVar('S')
 
 
-class Condition(Generic[T]):
-    def __init__(self, key_alias: str, key_type: str, transform: Callable[[T], any]):
+class Condition(Generic[T, S]):
+    def __init__(self, key_alias: str, key_type: str, transform: Callable[[T], S]):
         self.key_alias = key_alias
         self.key_type = key_type
         self.transform = transform
@@ -33,15 +34,11 @@ class Conditions:
     """
 
     def __init__(self,
-                 ctype: str,
-                 address_condition: Condition[str],
-                 selector_condition: Condition[Dict[str, any]],
-                 address_hash_condition: Optional[Condition[str]] = None,
-                 selector_hash_condition: Optional[Condition[Dict[str, any]]] = None):
-        if ctype != 'function' and ctype != 'event':
-            raise TypeError('The column type must be "function" or "event"')
+                 address_condition: Condition[str, str],
+                 selector_condition: Condition[Dict[str, any], str],
+                 address_hash_condition: Optional[Condition[str, int]] = None,
+                 selector_hash_condition: Optional[Condition[Dict[str, any], int]] = None):
 
-        self.ctype = ctype
         self.address_condition = address_condition
         self.address_hash_condition = address_hash_condition
         self.selector_condition = selector_condition

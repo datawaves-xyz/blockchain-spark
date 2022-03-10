@@ -7,7 +7,7 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 from web3 import Web3
 
 import test
-from datawaves.ethereum.condition import new_trace_conditions
+from datawaves import new_trace_conditions
 from datawaves.utils import hash_unsafe_bytes
 from spark3 import Spark3
 from test.spark3.utils import PySparkTestCase
