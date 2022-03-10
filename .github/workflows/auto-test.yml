@@ -42,8 +42,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m venv ./.venv 
-          . ./.venv/bin/activate 
+          if [ ! -d "./.venv" ]; then
+            python -m venv ./.venv 
+          fi
           pip install -r requirements_test.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Build UDF jar
