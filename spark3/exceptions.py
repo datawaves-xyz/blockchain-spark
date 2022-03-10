@@ -23,15 +23,24 @@ class ContractABINotConfigured(Exception):
     We failed to find abi json in contract
     """
 
-    def __init__(self) -> None:
-        message = "Please set ABI json before call any method of contract"
+    def __init__(self, message) -> None:
         super().__init__(message)
 
 
-class FunctionOrEventNotInContractABI(Exception):
+class ABIFunctionNotFound(Exception):
     """
-    We failed to find function or event
+    We failed to find function ABI
     """
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, message) -> None:
+        super().__init__(message)
+
+
+class ABIEventNotFound(Exception):
+    """
+    We failed to find event ABI
+    """
+
+    def __init__(self, message) -> None:
+        super().__init__(message)
+

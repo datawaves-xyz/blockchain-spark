@@ -10,7 +10,7 @@ import test
 from datawaves import new_trace_conditions
 from datawaves.utils import hash_unsafe_bytes
 from spark3 import Spark3
-from test.spark3.utils import PySparkTestCase
+from test.spark3._utils import PySparkTestCase
 
 RESOURCE_GROUP = 'contract_test'
 

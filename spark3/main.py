@@ -8,7 +8,7 @@ from spark3.ethereum.condition import Conditions
 from spark3.ethereum.contract import Contract
 from spark3.exceptions import ColumnNotFoundInDataFrame
 from spark3.providers import IContractABIProvider, EtherscanABIProvider
-from spark3.utils import contains_column
+from spark3.utils.df_util import contains_column
 
 
 class Spark3:
