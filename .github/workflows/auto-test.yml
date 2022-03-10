@@ -46,7 +46,6 @@ jobs:
             python -m venv ./.venv 
           fi
           pip install -r requirements_test.txt
-        if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Build UDF jar
         run: |
           mvn clean package -f java/pom.xml
