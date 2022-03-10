@@ -81,12 +81,12 @@ class Transformer:
 
         if not contains_column(df.dtypes, "unhex_input", "binary"):
             # len is required argument in substring, use expr(substring) to replace
-            df = df.withColumn("unhex_input", unhex(expr('substring(input, 3)')))
+            df = df.withColumn("unhex_input", unhex(Transformer._provides_unhex_expr("input")))
 
         if contains_column(df.dtypes, "output", "string"):
             if not contains_column(df.dtypes, "unhex_output", "binary"):
                 # len is required argument in substring, use expr(substring) to replace
-                df = df.withColumn("unhex_output", unhex(expr('substring(output, 3)')))
+                df = df.withColumn("unhex_output", unhex(Transformer._provides_unhex_expr("output")))
 
         return df \
             .withColumn("abi", lit(abi)) \
@@ -111,7 +111,7 @@ class Transformer:
 
         if not contains_column(df.dtypes, "unhex_data", "binary"):
             # len is required argument in substring, use expr(substring) to replace
-            df = df.withColumn("unhex_data", unhex(expr("substring(data, 3)")))
+            df = df.withColumn("unhex_data", unhex(Transformer._provides_unhex_expr("data")))
 
         if not contains_column(df.dtypes, "topics_arr", "array<string>"):
             raise ColumnNotFoundInDataFrame("topics_arr(array<string>)", df)
@@ -124,3 +124,7 @@ class Transformer:
             .drop("abi") \
             .drop("data") \
             .drop("evt_name")
+
+    @staticmethod
+    def _provides_unhex_expr(col_name: str) -> expr:
+        return expr(f'IF(instr({col_name}, "0x")=1, substring(input, 3), input)')
