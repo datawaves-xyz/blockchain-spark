@@ -33,7 +33,7 @@ setup(
     python_requires='>=3.6,<4',
     install_requires=[
         'requests>=2.16.0',
-        'eth-utils>=2.0.0'
+        'eth-utils==1.10.0'
     ],
     extras_require={
         'pyspark': ["pyspark==3.2.1"],
@@ -42,9 +42,9 @@ setup(
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
         'Source': 'https://github.com/tellery/blockchain-spark',
     },
-    test_requires=[
-        'nose == 1.3.7',
-        'unittest2 >= 1.0.0',
-        'web3 == 5.28.0'
+    tests_require=[
+        'nose==1.3.7',
+        'unittest2>=1.0.0',
+        'web3==5.28.0'
     ]
 )
