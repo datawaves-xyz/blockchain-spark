@@ -3,20 +3,25 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - '*'
+      - 'pypi-*'
 
 jobs:
-  build-n-publish:
-    name: Build and publish to PyPI
-    runs-on: ubuntu-18.04
+  build-n-publish-to-pypi:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ 3.8 ]
+
     steps:
       - uses: actions/checkout@master
-      - name: Set up Python 3.7
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: ${{ matrix.python-version }}
+
       - name: Build a binary wheel and a source tarball
         run: python setup.py sdist
+
       - name: Publish distribution to PyPI
         if: startsWith(github.event.ref, 'refs/tags/v')
         uses: pypa/gh-action-pypi-publish@master
