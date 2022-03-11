@@ -52,7 +52,7 @@ jobs:
       - uses: zdurham/s3-upload-github-action@master
         name: Upload jar to s3
         env:
-          FILE: ./java/target/blockchain-spark-${{ steps.build-udf-jar.outputs.version }}.jar
+          FILE: ./java/target/blockchain-spark-${{ steps.build-udf-jar.outputs.version }}-jar-with-dependencies.jar
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           S3_KEY: ${{ secrets.S3_JAR_KEY }}
