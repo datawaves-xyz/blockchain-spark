@@ -51,8 +51,6 @@ jobs:
 
       - uses: zdurham/s3-upload-github-action@master
         name: Upload jar to s3
-        with:
-          args: --acl public-read
         env:
           FILE: ./java/target/blockchain-spark-${{ steps.build-udf-jar.outputs.version }}.jar
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -69,8 +67,6 @@ jobs:
 
       - uses: zdurham/s3-upload-github-action@master
         name: Upload egg to s3
-        with:
-          args: --acl public-read
         env:
           FILE: ./dist/blockchain_spark-${{ steps.build-egg.outputs.version }}-py${{ matrix.python-version }}.egg
           AWS_REGION: ${{ secrets.AWS_REGION }}
