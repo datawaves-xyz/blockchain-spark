@@ -11,7 +11,7 @@ long_description = read('README.md') if os.path.isfile("README.md") else ""
 
 setup(
     name='blockchain-spark',
-    version='0.3.0b2',
+    version='0.4.0',
     author='songv',
     author_email='songwei@iftech.io',
     description='Spark extension utils for blockchain',
