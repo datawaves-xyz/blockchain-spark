@@ -47,7 +47,7 @@ jobs:
         id: build-udf-jar
         run: |
           mvn clean package -f java/pom.xml -DskipTests
-          echo ::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo ::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec -f java/pom.xml)
 
       - uses: zdurham/s3-upload-github-action@master
         name: Upload jar to s3
