@@ -1,9 +1,12 @@
 # Blockchain Spark
 
+[![Auto test](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml/badge.svg?branch=master&event=push)](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml)
+
 Blockchain Spark lets you decode smart contract activity into DataFrame.
 
 
-[![Auto test](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml/badge.svg?branch=master&event=push)](https://github.com/tellery/blockchain-spark/actions/workflows/auto-test.yml)
+*Example notebook using the decoded blockchain data: [OpenSea Trading Metrics](https://app.datawaves.xyz/notebook/4a33016e-c97b-45bc-8cfa-df216bfe1198)*.
+
 
 ## Using this Repo
 
@@ -30,7 +33,7 @@ python3 setup.py install
 To run a spark-shell with blockchain-spark and its dependencies on the classpath:
 
 ```shell
-pyspark --jars target/blockchain=spark-$VERSION-SNAPSHOT-jar-with-dependencies.jar
+pyspark --jars target/blockchain-spark-$VERSION-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ### Running Tests
