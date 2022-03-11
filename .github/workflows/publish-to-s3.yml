@@ -62,13 +62,13 @@ jobs:
       - name: Build a binary wheel and a source tarball
         id: build-egg
         run: |
-          python setup.py sdist
+          python setup.py bdist_egg
           echo ::set-output name=version::$(python setup.py --version)
 
       - uses: zdurham/s3-upload-github-action@master
         name: Upload egg to s3
         env:
-          FILE: ./dist/blockchain_spark-${{ steps.build-egg.outputs.version }}.egg
+          FILE: ./dist/blockchain_spark-${{ steps.build-egg.outputs.version }}-py${{ matrix.python-version }}.egg
           AWS_REGION: ${{ secrets.AWS_REGION }}
           S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
           S3_KEY: ${{ secrets.S3_EGG_KEY }}
