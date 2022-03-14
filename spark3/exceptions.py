@@ -5,7 +5,8 @@ class FailToGetEtherscanABI(Exception):
     """
     We failed to get ABI from Etherscan
     """
-    pass
+    def __init__(self, message) -> None:
+        super().__init__(message)
 
 
 class ColumnNotFoundInDataFrame(Exception):
