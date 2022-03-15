@@ -31,5 +31,5 @@ class EtherscanABIProvider(IContractABIProvider):
         data = r.json()
         if data['status'] != '1':
             self.logger.error("Failed to get contract abi: %s:%s", data['status'], data['message'])
-            raise FailToGetEtherscanABI()
+            raise FailToGetEtherscanABI(data['message'])
         return data['result']
