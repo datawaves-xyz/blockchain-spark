@@ -1,21 +1,20 @@
 import functools
 import json
-
 from typing import Sequence, Dict, Optional
+
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
 
+from spark3.ethereum.type_factory import TypeFactory
 from spark3.exceptions import (
     ContractABINotConfigured,
     ABIFunctionNotFound,
     ABIEventNotFound
 )
-
 from spark3.providers import IContractABIProvider
 from spark3.types import ABI
-from spark3.utils.abi import normalize_abi, filter_by_type, filter_by_name
-from spark3.ethereum.type_factory import TypeFactory
 from spark3.types import ABIElement, ABIFunctionElement
+from spark3.utils.abi import normalize_abi, filter_by_type, filter_by_name
 
 
 class Contract:
@@ -57,6 +56,18 @@ class Contract:
             self._event_schema = {x.get('name'): get_call_schema_map(x)
                                   for x in filter_by_type('event', self._abi)}
         return self._event_schema
+
+    def get_traces(self) -> DataFrame:
+        if self.spark3.trace_df is None or self.spark3.trace_conditions is None:
+            raise ValueError('Could not call get_traces without trace dataframe or trace conditions')
+
+        return self.spark3.trace_conditions.act(self.spark3.trace_df, self.address)
+
+    def get_logs(self) -> DataFrame:
+        if self.spark3.log_df is None or self.spark3.log_conditions is None:
+            raise ValueError('Could not call get_log without log dataframe or log conditions')
+
+        return self.spark3.log_conditions.act(self.spark3.log_df, self.address)
 
     def get_function_by_name(self, name: str) -> DataFrame:
         if self.spark3.trace_df is None or self.spark3.trace_conditions is None:
