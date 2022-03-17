@@ -14,7 +14,7 @@ class IContractABIProvider(metaclass=ABCMeta):
 
 
 class EtherscanABIProvider(IContractABIProvider):
-    logger = logging.getLogger("contract.EtherscanProvider")
+    logger = logging.getLogger("spark3.providers.EtherscanProvider")
 
     def __init__(self, apikey: Optional[str] = None):
         if apikey is None:
@@ -33,3 +33,13 @@ class EtherscanABIProvider(IContractABIProvider):
             self.logger.error("Failed to get contract abi: %s:%s", data['status'], data['message'])
             raise FailToGetEtherscanABI(data['message'])
         return data['result']
+
+class DatawavesABIProvider(IContractABIProvider):
+    logger = logging.getLogger("spark3.providers.DatawavesProvider")
+
+    def get_contract_abi(self, contract_address: str) -> str:
+        r = requests.get("http://abi-cache.tellery-prod:3000/api/getabi", params={
+            'address': contract_address
+        })
+        r.raise_for_status()
+        return r.text
