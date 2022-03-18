@@ -7,13 +7,12 @@ from pyspark.sql.types import StructType
 from spark3.ethereum.condition import Conditions
 from spark3.ethereum.contract import Contract
 from spark3.exceptions import ColumnNotFoundInDataFrame
-from spark3.providers import IContractABIProvider, EtherscanABIProvider, DatawavesABIProvider
+from spark3.providers import IContractABIProvider, EtherscanABIProvider
 from spark3.utils.df_util import contains_column
 
 
 class Spark3:
     EtherscanABIProvider = EtherscanABIProvider
-    DatawavesABIProvider = DatawavesABIProvider
 
     def __init__(self, spark: SparkSession,
                  trace: Optional[DataFrame] = None,
