@@ -44,13 +44,16 @@ class Conditions:
         self.selector_condition = selector_condition
         self.selector_hash_condition = selector_hash_condition
 
-    def act(self, df: DataFrame, address: str, single_abi: Dict[str, any]) -> DataFrame:
+    def act(self, df: DataFrame, address: str, single_abi: Optional[Dict[str, any]] = None) -> DataFrame:
         result_df = self.address_condition.acts(df, address)
-        result_df = self.selector_condition.acts(result_df, single_abi)
-
+        
         if self.address_hash_condition is not None:
             result_df = self.address_hash_condition.acts(result_df, address)
-        if self.selector_hash_condition is not None:
-            result_df = self.selector_hash_condition.acts(result_df, single_abi)
+
+        if single_abi is not None:
+            result_df = self.selector_condition.acts(result_df, single_abi)
+
+            if self.selector_hash_condition is not None:
+                result_df = self.selector_hash_condition.acts(result_df, single_abi)
 
         return result_df
