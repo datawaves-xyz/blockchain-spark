@@ -14,7 +14,7 @@ class IContractABIProvider(metaclass=ABCMeta):
 
 
 class EtherscanABIProvider(IContractABIProvider):
-    logger = logging.getLogger("contract.EtherscanProvider")
+    logger = logging.getLogger("spark3.providers.EtherscanProvider")
 
     def __init__(self, apikey: Optional[str] = None):
         if apikey is None:

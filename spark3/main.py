@@ -18,7 +18,8 @@ class Spark3:
                  trace: Optional[DataFrame] = None,
                  log: Optional[DataFrame] = None,
                  trace_conditions: Optional[Conditions] = None,
-                 log_conditions: Optional[Conditions] = None):
+                 log_conditions: Optional[Conditions] = None,
+                 default_abi_provider: Optional[IContractABIProvider] = None):
         """
         :param spark: :class:`SparkSession`
         :param trace: :class:`DataFrame` to store original data to decode contract functions
@@ -32,6 +33,7 @@ class Spark3:
         self.log_df = log
         self.trace_conditions = trace_conditions
         self.log_conditions = log_conditions
+        self.default_abi_provider = default_abi_provider
         self._transformer = Transformer()
 
     def contract(self, address: str,
@@ -55,7 +57,7 @@ class Spark3:
         >>>
         >>> contract = s3.contract(address=..., abi_provider=...)
         """
-        return Contract(self, address, abi, abi_provider)
+        return Contract(self, address, abi, abi_provider if abi_provider is not None else self.default_abi_provider)
 
     def transformer(self):
         return self._transformer
