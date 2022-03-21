@@ -27,7 +27,8 @@ class Contract:
         self._abi_provider = abi_provider
         self._abi_json = abi
 
-        if self._abi_provider is not None:
+        if self._abi_provider is not None and self._abi_json is None:
+            # Getting abi json from abi provider only if abi is not provided
             self._abi_json = self._abi_provider.get_contract_abi(self.address)
 
         if self._abi_json is None:
