@@ -65,8 +65,13 @@ class Spark3:
     def transformer(self):
         return self._transformer
 
+    @property
     def ignore_malformed(self):
         return self._ignore_malformed
+
+    @ignore_malformed.setter
+    def ignore_malformed(self, ignore_malformed):
+        self._ignore_malformed = ignore_malformed
 
 
 DECODE_CONTRACT_FUNCTION_UDF = "io.iftech.sparkudf.DecodeContractFunctionUDF"
