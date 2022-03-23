@@ -6,7 +6,6 @@ from pyspark.sql.types import StructType
 
 from spark3.ethereum.condition import Conditions
 from spark3.ethereum.contract import Contract
-from spark3.exceptions import ColumnNotFoundInDataFrame
 from spark3.providers import IContractABIProvider, EtherscanABIProvider
 from spark3.utils.df_util import contains_column
 
@@ -86,17 +85,11 @@ class Transformer:
 
         df.sql_ctx.udf.registerJavaFunction("decode_func_%s" % name, DECODE_CONTRACT_FUNCTION_UDF, schema)
 
-        if not contains_column(df.dtypes, "input", "string"):
-            raise ColumnNotFoundInDataFrame("input(string)", df)
-
         if not contains_column(df.dtypes, "unhex_input", "binary"):
-            # len is required argument in substring, use expr(substring) to replace
             df = df.withColumn("unhex_input", unhex(Transformer._provides_unhex_expr("input")))
 
-        if contains_column(df.dtypes, "output", "string"):
-            if not contains_column(df.dtypes, "unhex_output", "binary"):
-                # len is required argument in substring, use expr(substring) to replace
-                df = df.withColumn("unhex_output", unhex(Transformer._provides_unhex_expr("output")))
+        if not contains_column(df.dtypes, "unhex_output", "binary"):
+            df = df.withColumn("unhex_output", unhex(Transformer._provides_unhex_expr("output")))
 
         function_parameter = expr("decode_func_%s(unhex_input, unhex_output, abi, func_name)" % name)
         result = df \
@@ -117,15 +110,9 @@ class Transformer:
 
         df.sql_ctx.udf.registerJavaFunction("decode_evt_%s" % name, DECODE_CONTRACT_EVENT_UDF, schema)
 
-        if not contains_column(df.dtypes, "data", "string"):
-            raise ColumnNotFoundInDataFrame("data(string)", df)
-
         if not contains_column(df.dtypes, "unhex_data", "binary"):
-            # len is required argument in substring, use expr(substring) to replace
             df = df.withColumn("unhex_data", unhex(Transformer._provides_unhex_expr("data")))
 
-        if not contains_column(df.dtypes, "topics_arr", "array<string>"):
-            raise ColumnNotFoundInDataFrame("topics_arr(array<string>)", df)
         event_parameter = expr("decode_evt_%s(unhex_data, topics_arr, abi, evt_name)" % name)
 
         result = df \
