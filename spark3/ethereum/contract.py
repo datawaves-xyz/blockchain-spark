@@ -84,7 +84,7 @@ class Contract:
             .act(self.spark3.trace_df, self.address, function_abi)
 
         return self.spark3.transformer() \
-            .parse_trace_to_function(df, json.dumps(function_abi), schema, name)
+            .parse_trace_to_function(df, json.dumps(function_abi), schema, name, self.spark3.ignore_malformed)
 
     def get_event_by_name(self, name: str) -> DataFrame:
         if self.spark3.log_df is None or self.spark3.log_conditions is None:
@@ -100,7 +100,7 @@ class Contract:
             .act(self.spark3.log_df, self.address, event_abi)
 
         return self.spark3.transformer() \
-            .parse_log_to_event(df, json.dumps(event_abi), schema, name)
+            .parse_log_to_event(df, json.dumps(event_abi), schema, name, self.spark3.ignore_malformed)
 
     @functools.cached_property
     def all_functions(self) -> Dict[str, DataFrame]:
