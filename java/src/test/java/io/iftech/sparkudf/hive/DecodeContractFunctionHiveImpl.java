@@ -20,29 +20,29 @@ public class DecodeContractFunctionHiveImpl extends DecodeContractFunctionHiveUD
     public List<ObjectInspector> getInputDataFieldsOIs() {
         return ImmutableList.of(
             // test_string
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+            PrimitiveObjectInspectorFactory.writableStringObjectInspector,
             // test_bigint
-            PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
+            PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector,
             // test_address
-            PrimitiveObjectInspectorFactory.javaStringObjectInspector,
+            PrimitiveObjectInspectorFactory.writableStringObjectInspector,
             // test_bytes
-            PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
+            PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
             // test_bool
-            PrimitiveObjectInspectorFactory.javaBooleanObjectInspector,
+            PrimitiveObjectInspectorFactory.writableBooleanObjectInspector,
             // test_M_bytes
-            PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector,
+            PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
             // test_int_array
             ObjectInspectorFactory.getStandardListObjectInspector(
-                PrimitiveObjectInspectorFactory.javaIntObjectInspector),
+                PrimitiveObjectInspectorFactory.writableIntObjectInspector),
             // test_address_array
             ObjectInspectorFactory.getStandardListObjectInspector(
-                PrimitiveObjectInspectorFactory.javaStringObjectInspector),
+                PrimitiveObjectInspectorFactory.writableStringObjectInspector),
             // test_bigint_array
             ObjectInspectorFactory.getStandardListObjectInspector(
-                PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector),
+                PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector),
             // test_bytes_array
             ObjectInspectorFactory.getStandardListObjectInspector(
-                PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector),
+                PrimitiveObjectInspectorFactory.writableBinaryObjectInspector),
             // data
             ObjectInspectorFactory.getStandardStructObjectInspector(
                 ImmutableList.of("test_inner_tuple"),
@@ -50,7 +50,7 @@ public class DecodeContractFunctionHiveImpl extends DecodeContractFunctionHiveUD
                     ObjectInspectorFactory.getStandardStructObjectInspector(
                         ImmutableList.of("f3.inner"),
                         ImmutableList.of(
-                            PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector)
+                            PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector)
                     )
                 )
             )
