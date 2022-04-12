@@ -1,18 +1,18 @@
-package io.iftech.sparkudf;
+package io.iftech.sparkudf.spark;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.iftech.sparkudf.converter.Converter;
 import java.math.BigInteger;
 import java.util.List;
 import org.apache.spark.sql.Row;
 import org.junit.Test;
 import scala.collection.mutable.WrappedArray;
 
-public class DecodeContractEventTest {
+public class DecodeContractEventUDFTest {
 
     Gson gson = new GsonBuilder().create();
 
@@ -28,7 +28,7 @@ public class DecodeContractEventTest {
         DecodeContractEventUDF udf = new DecodeContractEventUDF();
 
         Row row = udf.call(
-            ContractDecoder.decodeHexStartsWith0x(
+            Converter.decodeHexStartsWith0x(
                 "0x000000000000000000000000000000000000000000003b23f6365b3fabec0000"),
             WrappedArray.make(new String[]{
                 "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
@@ -40,12 +40,11 @@ public class DecodeContractEventTest {
         Row inputs = row.getStruct(0);
         assertEquals("0xb3f923eabaf178fc1bd8e13902fc5c61d3ddef5b", inputs.get(0));
         assertEquals("0x28c6c06298d514db089934071355e5743bf21d60", inputs.get(1));
-        assertTrue(
-            (new BigInteger("279283000000000000000000")).compareTo((BigInteger) inputs.get(2))
-                == 0);
+        assertEquals(0,
+            (new BigInteger("279283000000000000000000")).compareTo((BigInteger) inputs.get(2)));
     }
 
-    protected class Field {
+    protected static class Field {
 
         String name;
         String type;
@@ -64,7 +63,7 @@ public class DecodeContractEventTest {
         }
     }
 
-    protected class ContractEvent {
+    protected static class ContractEvent {
 
         String name = "test_event";
         String type = "event";
