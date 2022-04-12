@@ -7,7 +7,7 @@
 
   <groupId>io.iftech</groupId>
   <artifactId>blockchain-spark</artifactId>
-  <version>0.4.4-test</version>
+  <version>0.5.0</version>
   <name>blockchain-spark</name>
 
   <properties>
@@ -74,8 +74,8 @@
         </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
 
+    <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -89,6 +89,28 @@
             <phase>package</phase>
             <goals>
               <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>com.bazaarvoice.maven.plugins</groupId>
+        <artifactId>s3-upload-maven-plugin</artifactId>
+        <version>1.5</version>
+        <configuration>
+          <bucketName>ifcrypto</bucketName>
+          <source>
+            target/blockchain-spark-${project.version}-jar-with-dependencies.jar
+          </source>
+          <destination>
+            dist/jars/blockchain-spark-${project.version}-jar-with-dependencies.jar
+          </destination>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>s3-upload</goal>
             </goals>
           </execution>
         </executions>
