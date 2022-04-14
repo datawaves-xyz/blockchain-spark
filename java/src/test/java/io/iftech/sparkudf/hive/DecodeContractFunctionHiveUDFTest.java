@@ -1,6 +1,5 @@
 package io.iftech.sparkudf.hive;
 
-import static io.iftech.sparkudf.TestUtils.convertSeqToList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -27,7 +26,6 @@ import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.junit.Test;
-import scala.collection.Seq;
 
 @SuppressWarnings("unchecked")
 public class DecodeContractFunctionHiveUDFTest {
@@ -106,24 +104,22 @@ public class DecodeContractFunctionHiveUDFTest {
         assertTrue(((BooleanWritable) resultData.get(4)).get());
         assertArrayEquals(new byte[]{9, 9}, ((BytesWritable) resultData.get(5)).getBytes());
 
-        assertEquals(2, convertSeqToList((Seq<Object>) resultData.get(6)).size());
-        assertEquals(17,
-            ((IntWritable) convertSeqToList((Seq<Object>) resultData.get(6)).get(0)).get());
-        assertEquals(19,
-            ((IntWritable) convertSeqToList((Seq<Object>) resultData.get(6)).get(1)).get());
+        assertEquals(2, ((List<Object>) resultData.get(6)).size());
+        assertEquals(17, ((IntWritable) ((List<Object>) resultData.get(6)).get(0)).get());
+        assertEquals(19, ((IntWritable) ((List<Object>) resultData.get(6)).get(1)).get());
 
-        assertEquals(1, convertSeqToList((Seq<Object>) resultData.get(7)).size());
+        assertEquals(1, ((List<Object>) resultData.get(7)).size());
         assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
-            convertSeqToList((Seq<Object>) resultData.get(7)).get(0).toString());
+            ((List<Object>) resultData.get(7)).get(0).toString());
 
-        assertEquals(1, convertSeqToList((Seq<Object>) resultData.get(8)).size());
+        assertEquals(1, ((List<Object>) resultData.get(8)).size());
         assertEquals(0,
-            ((HiveDecimalWritable) convertSeqToList((Seq<Object>) resultData.get(8)).get(
+            ((HiveDecimalWritable) ((List<Object>) resultData.get(8)).get(
                 0)).getHiveDecimal().bigDecimalValue().compareTo(new BigDecimal("400000000000")));
 
-        assertEquals(1, convertSeqToList((Seq<Object>) resultData.get(9)).size());
+        assertEquals(1, ((List<Object>) resultData.get(9)).size());
         assertArrayEquals(new byte[]{0, 1, 1, 0},
-            ((BytesWritable) convertSeqToList((Seq<Object>) resultData.get(9)).get(0)).getBytes());
+            ((BytesWritable) ((List<Object>) resultData.get(9)).get(0)).getBytes());
 
         StandardStructObjectInspector dataOI = (StandardStructObjectInspector) inputOI.getStructFieldRef(
             "data").getFieldObjectInspector();

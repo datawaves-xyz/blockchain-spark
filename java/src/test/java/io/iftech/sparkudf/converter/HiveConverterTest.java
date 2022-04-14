@@ -1,6 +1,5 @@
 package io.iftech.sparkudf.converter;
 
-import static io.iftech.sparkudf.TestUtils.convertSeqToList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -21,7 +20,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
-import scala.collection.Seq;
 
 @SuppressWarnings("unchecked")
 public class HiveConverterTest {
@@ -90,9 +88,8 @@ public class HiveConverterTest {
         assertTrue(result.get(12) instanceof BytesWritable);
         assertTrue(result.get(13) instanceof BytesWritable);
         assertTrue(result.get(14) instanceof Text);
-        assertTrue(convertSeqToList((Seq<Object>) result.get(15)).get(0) instanceof IntWritable);
-        assertTrue(
-            convertSeqToList((Seq<Object>) result.get(17)).get(0) instanceof BooleanWritable);
+        assertTrue(((List<Object>) result.get(15)).get(0) instanceof IntWritable);
+        assertTrue(((List<Object>) result.get(17)).get(0) instanceof BooleanWritable);
         assertTrue(((LinkedList<Object>) result.get(18)).get(0) instanceof HiveDecimalWritable);
         assertTrue(((LinkedList<Object>) result.get(18)).get(1) instanceof Text);
     }

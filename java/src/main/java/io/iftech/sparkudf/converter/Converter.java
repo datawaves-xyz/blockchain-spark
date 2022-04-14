@@ -21,6 +21,12 @@ import scala.collection.Seq;
  */
 public abstract class Converter<T> {
 
+    private final boolean listToSeq;
+
+    public Converter(boolean arrayToSeq) {
+        this.listToSeq = arrayToSeq;
+    }
+
     protected abstract Object convertBoolean(Boolean val);
 
     protected abstract Object convertByte(Byte val);
@@ -114,7 +120,11 @@ public abstract class Converter<T> {
                 );
         }
 
-        return convertListToSeq(result);
+        if (listToSeq) {
+            return convertListToSeq(result);
+        } else {
+            return result;
+        }
     }
 
     protected List<Object> convertTupleToObjectList(TupleType tupleType, Tuple tuple) {

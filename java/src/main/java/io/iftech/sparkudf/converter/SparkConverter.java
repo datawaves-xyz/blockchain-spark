@@ -9,6 +9,10 @@ import org.apache.spark.sql.Row;
 
 public class SparkConverter extends Converter<Row> {
 
+    public SparkConverter() {
+        super(true);
+    }
+
     @Override
     public Object convertBoolean(Boolean val) {
         return val;

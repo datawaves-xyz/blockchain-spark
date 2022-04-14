@@ -17,6 +17,10 @@ import org.apache.hadoop.io.Text;
 
 public class HiveConverter extends Converter<List<Object>> {
 
+    public HiveConverter() {
+        super(false);
+    }
+
     @Override
     public Object convertBoolean(Boolean val) {
         return new BooleanWritable(val);
