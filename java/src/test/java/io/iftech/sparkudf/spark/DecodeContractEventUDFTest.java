@@ -5,9 +5,10 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.iftech.sparkudf.Mocks.ContractEvent;
+import io.iftech.sparkudf.Mocks.EventField;
 import io.iftech.sparkudf.converter.Converter;
 import java.math.BigInteger;
-import java.util.List;
 import org.apache.spark.sql.Row;
 import org.junit.Test;
 import scala.collection.mutable.WrappedArray;
@@ -21,9 +22,9 @@ public class DecodeContractEventUDFTest {
 
         ContractEvent e = new ContractEvent("Transfer");
         e.inputs = ImmutableList.of(
-            new Field("from", "address", true),
-            new Field("to", "address", true),
-            new Field("value", "uint256"));
+            new EventField("from", "address", true),
+            new EventField("to", "address", true),
+            new EventField("value", "uint256"));
 
         DecodeContractEventUDF udf = new DecodeContractEventUDF();
 
@@ -42,35 +43,5 @@ public class DecodeContractEventUDFTest {
         assertEquals("0x28c6c06298d514db089934071355e5743bf21d60", inputs.get(1));
         assertEquals(0,
             (new BigInteger("279283000000000000000000")).compareTo((BigInteger) inputs.get(2)));
-    }
-
-    protected static class Field {
-
-        String name;
-        String type;
-        boolean indexed;
-
-        List<Field> components;
-
-        Field(String name, String type, boolean indexed) {
-            this.name = name;
-            this.type = type;
-            this.indexed = indexed;
-        }
-
-        Field(String name, String type) {
-            this(name, type, false);
-        }
-    }
-
-    protected static class ContractEvent {
-
-        String name = "test_event";
-        String type = "event";
-        List<Field> inputs;
-
-        ContractEvent(String name) {
-            this.name = name;
-        }
     }
 }

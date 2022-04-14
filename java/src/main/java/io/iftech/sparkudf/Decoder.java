@@ -1,16 +1,20 @@
 package io.iftech.sparkudf;
 
+import com.esaulpaugh.headlong.abi.ABIType;
 import com.esaulpaugh.headlong.abi.Event;
 import com.esaulpaugh.headlong.abi.Function;
 import com.esaulpaugh.headlong.abi.Tuple;
 import com.esaulpaugh.headlong.abi.TupleType;
 import io.iftech.sparkudf.converter.Converter;
 import io.iftech.sparkudf.converter.SparkConverter;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.arrow.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sparkproject.guava.base.Strings;
 import org.sparkproject.guava.collect.ImmutableList;
 
 public class Decoder<T> {
@@ -30,6 +34,7 @@ public class Decoder<T> {
         final String eventName
     ) {
         Event e = Event.fromJson(eventABI);
+        reviseElementName(e.getInputs(), "");
         if (!e.getName().equals(eventName)) {
             throw new IllegalArgumentException("Event name not match, eventABI=" + eventABI);
         }
@@ -60,6 +65,8 @@ public class Decoder<T> {
         final String functionName
     ) {
         Function f = Function.fromJson(functionABI);
+        reviseElementName(f.getInputs(), "");
+        reviseElementName(f.getOutputs(), "output");
         if (!f.getName().equals(functionName)) {
             throw new IllegalArgumentException("Function name not match, eventABI=" + functionABI);
         }
@@ -92,5 +99,54 @@ public class Decoder<T> {
         }
 
         return values;
+    }
+
+    // The name field in ABI is an optional field, we need to full up all null names:
+    // - the field in input: _{i} like: _0, _1
+    // - the field in output: output_{i} like: output_0, output_1
+    // the logic is same with: https://github.com/datawaves-xyz/blockchain-dbt/blob/master/bdbt/ethereum/abi/abi_transformer.py#L147
+    @VisibleForTesting
+    static void reviseElementName(TupleType tuple, String prefix) {
+        if (tuple.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < tuple.size(); i++) {
+            ABIType<?> element = tuple.get(i);
+            if (Strings.isNullOrEmpty(prefix)) {
+                setFieldValue(element, "name",
+                    Strings.isNullOrEmpty(element.getName())
+                        ? "_" + i
+                        : element.getName());
+            } else {
+                setFieldValue(element, "name",
+                    Strings.isNullOrEmpty(element.getName())
+                        ? prefix + "_" + i
+                        : prefix + "_" + element.getName());
+            }
+        }
+    }
+
+    private static void setFieldValue(Object object, String fieldName, Object valueTobeSet) {
+        try {
+            Field field = getField(object.getClass(), fieldName);
+            field.setAccessible(true);
+            field.set(object, valueTobeSet);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Field getField(Class clazz, String fieldName) {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            Class superClass = clazz.getSuperclass();
+            if (superClass == null) {
+                throw new RuntimeException(e);
+            } else {
+                return getField(superClass, fieldName);
+            }
+        }
     }
 }

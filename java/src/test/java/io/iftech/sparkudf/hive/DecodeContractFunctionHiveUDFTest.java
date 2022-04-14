@@ -10,6 +10,8 @@ import com.esaulpaugh.headlong.abi.Tuple;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.iftech.sparkudf.Mocks.ContractFunction;
+import io.iftech.sparkudf.Mocks.FunctionField;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -36,19 +38,19 @@ public class DecodeContractFunctionHiveUDFTest {
     public void testDecodeContractFunction() throws HiveException {
         ContractFunction f = new ContractFunction();
         f.inputs = ImmutableList.of(
-            new Field("test_string", "string"),
-            new Field("test_bigint", "uint256"),
-            new Field("test_address", "address"),
-            new Field("test_bytes", "bytes"),
-            new Field("test_bool", "bool"),
-            new Field("test_M_bytes", "bytes2"),
-            new Field("test_int_array", "int8[2]"),
-            new Field("test_address_array", "address[1]"),
-            new Field("test_bigint_array", "uint256[1]"),
-            new Field("test_bytes_array", "bytes4[1]"),
-            new Field("data", "tuple", ImmutableList.of(
-                new Field("test_inner_tuple", "tuple", ImmutableList.of(
-                    new Field("f3.inner", "uint256")))))
+            new FunctionField("test_string", "string"),
+            new FunctionField("test_bigint", "uint256"),
+            new FunctionField("test_address", "address"),
+            new FunctionField("test_bytes", "bytes"),
+            new FunctionField("test_bool", "bool"),
+            new FunctionField("test_M_bytes", "bytes2"),
+            new FunctionField("test_int_array", "int8[2]"),
+            new FunctionField("test_address_array", "address[1]"),
+            new FunctionField("test_bigint_array", "uint256[1]"),
+            new FunctionField("test_bytes_array", "bytes4[1]"),
+            new FunctionField("data", "tuple", ImmutableList.of(
+                new FunctionField("test_inner_tuple", "tuple", ImmutableList.of(
+                    new FunctionField("f3.inner", "uint256")))))
         );
 
         Function function = Function.fromJson(gson.toJson(f));
@@ -134,31 +136,4 @@ public class DecodeContractFunctionHiveUDFTest {
             ((HiveDecimalWritable) testInnerTupleObjects.get(0)).getHiveDecimal().bigDecimalValue()
                 .compareTo(new BigDecimal("300000000000")));
     }
-
-    protected static class Field {
-
-        String name;
-        String type;
-        List<Field> components;
-
-        Field(String name, String type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        Field(String name, String type, List<Field> components) {
-            this(name, type);
-            this.components = components;
-        }
-    }
-
-    protected static class ContractFunction {
-
-        String name = "test_function";
-        String type = "function";
-        List<Field> inputs;
-        List<Field> outputs;
-
-    }
-
 }

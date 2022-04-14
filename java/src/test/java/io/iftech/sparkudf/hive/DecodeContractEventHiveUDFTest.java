@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.iftech.sparkudf.Mocks.ContractEvent;
+import io.iftech.sparkudf.Mocks.EventField;
 import io.iftech.sparkudf.converter.Converter;
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,9 +31,9 @@ public class DecodeContractEventHiveUDFTest {
     public void testDecodeContractEvent() throws HiveException {
         ContractEvent e = new ContractEvent("Transfer");
         e.inputs = ImmutableList.of(
-            new Field("from", "address", true),
-            new Field("to", "address", true),
-            new Field("value", "uint256"));
+            new EventField("from", "address", true),
+            new EventField("to", "address", true),
+            new EventField("value", "uint256"));
 
         DecodeContractEventHiveImpl impl = new DecodeContractEventHiveImpl();
 
@@ -77,35 +79,5 @@ public class DecodeContractEventHiveUDFTest {
         assertEquals(0, ((HiveDecimalWritable) resultData.get(2))
             .getHiveDecimal().bigDecimalValue()
             .compareTo(new BigDecimal("279283000000000000000000")));
-    }
-
-    protected static class Field {
-
-        String name;
-        String type;
-        boolean indexed;
-
-        List<DecodeContractEventHiveUDFTest.Field> components;
-
-        Field(String name, String type, boolean indexed) {
-            this.name = name;
-            this.type = type;
-            this.indexed = indexed;
-        }
-
-        Field(String name, String type) {
-            this(name, type, false);
-        }
-    }
-
-    protected static class ContractEvent {
-
-        String name = "test_event";
-        String type = "event";
-        List<DecodeContractEventHiveUDFTest.Field> inputs;
-
-        ContractEvent(String name) {
-            this.name = name;
-        }
     }
 }
