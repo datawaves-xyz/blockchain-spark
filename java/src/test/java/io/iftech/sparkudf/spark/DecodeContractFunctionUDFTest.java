@@ -1,7 +1,8 @@
-package io.iftech.sparkudf;
+package io.iftech.sparkudf.spark;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.esaulpaugh.headlong.abi.Address;
 import com.esaulpaugh.headlong.abi.Function;
@@ -9,13 +10,15 @@ import com.esaulpaugh.headlong.abi.Tuple;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.iftech.sparkudf.Mocks.ContractFunction;
+import io.iftech.sparkudf.Mocks.FunctionField;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.spark.sql.Row;
 import org.junit.Test;
 
-public class DecodeContractFunctionTest {
+public class DecodeContractFunctionUDFTest {
 
     Gson gson = new GsonBuilder().create();
 
@@ -24,12 +27,12 @@ public class DecodeContractFunctionTest {
 
         ContractFunction f = new ContractFunction();
         f.inputs = ImmutableList.of(
-            new Field("test_string", "string"),
-            new Field("test_bigint", "uint256"),
-            new Field("test_address", "address"),
-            new Field("test_bytes", "bytes"),
-            new Field("test_bool", "bool"),
-            new Field("test_M_bytes", "bytes2"));
+            new FunctionField("test_string", "string"),
+            new FunctionField("test_bigint", "uint256"),
+            new FunctionField("test_address", "address"),
+            new FunctionField("test_bytes", "bytes"),
+            new FunctionField("test_bool", "bool"),
+            new FunctionField("test_M_bytes", "bytes2"));
 
         Function function = Function.fromJson(gson.toJson(f));
         ByteBuffer bytes = function.encodeCall(
@@ -48,7 +51,7 @@ public class DecodeContractFunctionTest {
         assertEquals(BigInteger.valueOf(100000000000L), input.get(1));
         assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b", input.getString(2));
         assertArrayEquals(new byte[]{0, 1, 1, 0}, (byte[]) input.get(3));
-        assertEquals(true, input.getBoolean(4));
+        assertTrue(input.getBoolean(4));
         assertArrayEquals(new byte[]{9, 9}, (byte[]) input.get(5));
         assertEquals(1, result.length());
     }
@@ -58,10 +61,10 @@ public class DecodeContractFunctionTest {
 
         ContractFunction f = new ContractFunction();
         f.inputs = ImmutableList.of(
-            new Field("test_int_array", "int8[2]"),
-            new Field("test_address_array", "address[1]"),
-            new Field("test_bigint_array", "uint256[1]"),
-            new Field("test_bytes_array", "bytes4[1]"));
+            new FunctionField("test_int_array", "int8[2]"),
+            new FunctionField("test_address_array", "address[1]"),
+            new FunctionField("test_bigint_array", "uint256[1]"),
+            new FunctionField("test_bytes_array", "bytes4[1]"));
 
         Function function = Function.fromJson(gson.toJson(f));
         ByteBuffer bytes = function.encodeCall(
@@ -75,11 +78,19 @@ public class DecodeContractFunctionTest {
         Row result = udf.call(bytes.array(), new byte[]{}, gson.toJson(f),
             "test_function");
         Row input = result.getStruct(0);
-        assertArrayEquals(new int[]{17, 19}, (int[]) input.get(0));
+
+        List<Integer> value1 = input.getList(0);
+        assertEquals(2, value1.size());
+        assertEquals(17, value1.get(0).intValue());
+        assertEquals(19, value1.get(1).intValue());
+
         assertEquals(ImmutableList.of("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b"),
             input.getList(1));
-        assertArrayEquals(new BigInteger[]{BigInteger.valueOf(400000000000L)},
-            (BigInteger[]) input.get(2));
+
+        List<BigInteger> value3 = input.getList(2);
+        assertEquals(1, value3.size());
+        assertEquals(BigInteger.valueOf(400000000000L), value3.get(0));
+
         assertArrayEquals(new byte[]{0, 1, 1, 0}, (byte[]) input.getList(3).get(0));
         assertEquals(1, result.length());
     }
@@ -89,9 +100,9 @@ public class DecodeContractFunctionTest {
 
         ContractFunction f = new ContractFunction();
         f.inputs = ImmutableList.of(
-            new Field("data", "tuple", ImmutableList.of(
-                new Field("test_inner_tuple", "tuple", ImmutableList.of(
-                    new Field("f3.inner", "uint256"))))));
+            new FunctionField("data", "tuple", ImmutableList.of(
+                new FunctionField("test_inner_tuple", "tuple", ImmutableList.of(
+                    new FunctionField("f3.inner", "uint256"))))));
 
         Function function = Function.fromJson(gson.toJson(f));
         ByteBuffer bytes = function.encodeCall(
@@ -112,7 +123,7 @@ public class DecodeContractFunctionTest {
 
         ContractFunction f = new ContractFunction();
         f.inputs = ImmutableList.of(
-            new Field("one", "uint256"));
+            new FunctionField("one", "uint256"));
 
         Function function = Function.fromJson(gson.toJson(f));
         ByteBuffer bytes = function.encodeCall(
@@ -123,31 +134,5 @@ public class DecodeContractFunctionTest {
             "test_function");
         assertEquals(BigInteger.valueOf(300000000000L), result.getStruct(0).get(0));
         assertEquals(1, result.length());
-    }
-
-    protected class Field {
-
-        String name;
-        String type;
-        List<Field> components;
-
-        Field(String name, String type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        Field(String name, String type, List<Field> components) {
-            this(name, type);
-            this.components = components;
-        }
-    }
-
-    protected class ContractFunction {
-
-        String name = "test_function";
-        String type = "function";
-        List<Field> inputs;
-        List<Field> outputs;
-
     }
 }

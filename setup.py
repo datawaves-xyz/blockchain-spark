@@ -11,10 +11,10 @@ long_description = read('README.md') if os.path.isfile("README.md") else ""
 
 setup(
     name='blockchain-spark',
-    version='0.4.2',
-    author='songv',
-    author_email='songwei@iftech.io',
-    description='Spark extension utils for blockchain',
+    version='0.5.0',
+    author='Datawaves',
+    author_email='team@datawaves.xyz',
+    description='Lets you decode smart contract activity into DataFrame',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/tellery/blockchain-spark',
@@ -36,7 +36,10 @@ setup(
         'eth-utils==1.10.0'
     ],
     extras_require={
-        'pyspark': ["pyspark==3.2.1"],
+        'dev': [
+            "pytest~=4.3.0",
+            "pyspark==3.2.1"
+        ],
     },
     project_urls={
         'Bug Reports': 'https://github.com/tellery/blockchain-spark/issues',
