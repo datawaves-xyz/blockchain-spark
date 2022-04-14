@@ -74,8 +74,8 @@ class Spark3:
         self._ignore_malformed = ignore_malformed
 
 
-DECODE_CONTRACT_FUNCTION_UDF = "io.iftech.sparkudf.DecodeContractFunctionUDF"
-DECODE_CONTRACT_EVENT_UDF = "io.iftech.sparkudf.DecodeContractEventUDF"
+DECODE_CONTRACT_FUNCTION_UDF = "io.iftech.sparkudf.spark.DecodeContractFunctionUDF"
+DECODE_CONTRACT_EVENT_UDF = "io.iftech.sparkudf.spark.DecodeContractEventUDF"
 
 
 class Transformer:
