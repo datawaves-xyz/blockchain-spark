@@ -19,6 +19,6 @@ public class DecodeContractFunctionUDF implements UDF4<byte[], byte[], String, S
         List<Object> values = new Decoder<>(new SparkConverter())
             .decodeFunction(inputData, outputData, functionABI, functionName);
 
-        return Row.fromSeq(Converter.convertListToSeq(values));
+        return values == null ? null : Row.fromSeq(Converter.convertListToSeq(values));
     }
 }

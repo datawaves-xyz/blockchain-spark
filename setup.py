@@ -11,7 +11,7 @@ long_description = read('README.md') if os.path.isfile("README.md") else ""
 
 setup(
     name='blockchain-spark',
-    version='0.5.0',
+    version='0.5.1',
     author='Datawaves',
     author_email='team@datawaves.xyz',
     description='Lets you decode smart contract activity into DataFrame',
