@@ -7,7 +7,7 @@
 
   <groupId>io.iftech</groupId>
   <artifactId>blockchain-spark</artifactId>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <name>blockchain-spark</name>
 
   <properties>

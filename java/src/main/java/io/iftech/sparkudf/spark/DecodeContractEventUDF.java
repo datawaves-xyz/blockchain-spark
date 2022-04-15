@@ -27,6 +27,6 @@ public class DecodeContractEventUDF implements
                 eventName
             );
 
-        return Row.fromSeq(Converter.convertListToSeq(values));
+        return values == null ? null : Row.fromSeq(Converter.convertListToSeq(values));
     }
 }
