@@ -7,7 +7,7 @@
 
   <groupId>io.iftech</groupId>
   <artifactId>blockchain-spark</artifactId>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <name>blockchain-spark</name>
 
   <properties>
@@ -21,7 +21,7 @@
     <dependency>
       <groupId>com.esaulpaugh</groupId>
       <artifactId>headlong</artifactId>
-      <version>6.0.2</version>
+      <version>6.2.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
