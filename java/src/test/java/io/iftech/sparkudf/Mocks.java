@@ -31,6 +31,14 @@ public class Mocks {
         public String type = "function";
         public List<FunctionField> inputs;
         public List<FunctionField> outputs;
+
+        public ContractFunction() {
+            
+        }
+
+        public ContractFunction(String name) {
+            this.name = name;
+        }
     }
 
     public static class EventField {
