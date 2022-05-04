@@ -12,21 +12,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.iftech.sparkudf.Mocks.ContractFunction;
 import io.iftech.sparkudf.Mocks.FunctionField;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.List;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
 @SuppressWarnings("unchecked")
@@ -99,25 +97,22 @@ public class DecodeContractFunctionHiveUDFTest {
         List<Object> resultData = inputOI.getStructFieldsDataAsList(inputData);
 
         assertEquals("This is a string", resultData.get(0).toString());
-        assertEquals(0, ((HiveDecimalWritable) resultData.get(1)).getHiveDecimal().bigDecimalValue()
-            .compareTo(new BigDecimal("100000000000")));
+        assertEquals(new Text("100000000000"), resultData.get(1));
         assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b", resultData.get(2).toString());
         assertArrayEquals(new byte[]{0, 1, 1, 0}, ((BytesWritable) resultData.get(3)).getBytes());
         assertTrue(((BooleanWritable) resultData.get(4)).get());
         assertArrayEquals(new byte[]{9, 9}, ((BytesWritable) resultData.get(5)).getBytes());
 
         assertEquals(2, ((List<Object>) resultData.get(6)).size());
-        assertEquals(17, ((IntWritable) ((List<Object>) resultData.get(6)).get(0)).get());
-        assertEquals(19, ((IntWritable) ((List<Object>) resultData.get(6)).get(1)).get());
+        assertEquals(new Text("17"), ((List<Object>) resultData.get(6)).get(0));
+        assertEquals(new Text("19"), ((List<Object>) resultData.get(6)).get(1));
 
         assertEquals(1, ((List<Object>) resultData.get(7)).size());
         assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b",
             ((List<Object>) resultData.get(7)).get(0).toString());
 
         assertEquals(1, ((List<Object>) resultData.get(8)).size());
-        assertEquals(0,
-            ((HiveDecimalWritable) ((List<Object>) resultData.get(8)).get(
-                0)).getHiveDecimal().bigDecimalValue().compareTo(new BigDecimal("400000000000")));
+        assertEquals(new Text("400000000000"), ((List<Object>) resultData.get(8)).get(0));
 
         assertEquals(1, ((List<Object>) resultData.get(9)).size());
         assertArrayEquals(new byte[]{0, 1, 1, 0},
@@ -132,8 +127,6 @@ public class DecodeContractFunctionHiveUDFTest {
         List<Object> testInnerTupleObjects = testInnerTupleOI.getStructFieldsDataAsList(
             dataObjects.get(0));
 
-        assertEquals(0,
-            ((HiveDecimalWritable) testInnerTupleObjects.get(0)).getHiveDecimal().bigDecimalValue()
-                .compareTo(new BigDecimal("300000000000")));
+        assertEquals(new Text("300000000000"), testInnerTupleObjects.get(0));
     }
 }

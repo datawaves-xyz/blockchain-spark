@@ -1,6 +1,7 @@
 package io.iftech.sparkudf.hive;
 
 import static io.iftech.sparkudf.TestUtils.hexStringToByteArray;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -15,6 +16,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
 @SuppressWarnings("unchecked")
@@ -65,10 +67,27 @@ public class OpenseaWyvernExchangeV2AtomicMatchTest {
         // Parse output data by output inspector and check it
         StandardStructObjectInspector inputOI = (StandardStructObjectInspector) resultOI.getStructFieldRef(
             "input").getFieldObjectInspector();
-        // TODO handle BigInt in Hive UDF
-//        List<Object> inputData = (List<Object>) resultOI.getStructFieldData(result,
-//            resultOI.getStructFieldRef("input"));
-//        List<Object> resultData = inputOI.getStructFieldsDataAsList(inputData);
+        List<Object> inputData = (List<Object>) resultOI.getStructFieldData(result,
+            resultOI.getStructFieldRef("input"));
+        List<Object> resultData = inputOI.getStructFieldsDataAsList(inputData);
 
+        List<Object> addrs = (List<Object>) resultData.get(0);
+        assertEquals(14, addrs.size());
+        assertEquals("0x7f268357a8c2552623316e2562d90e642bb538e5", addrs.get(0).toString());
+        assertEquals("0x66c7f46b0cb2482119c33010f89ebfd3591f936f", addrs.get(1).toString());
+        assertEquals("0x0000000000000000000000000000000000000000", addrs.get(13).toString());
+
+        List<Object> uints = (List<Object>) resultData.get(1);
+        assertEquals(18, uints.size());
+        assertEquals(new Text("750"), uints.get(0));
+        assertEquals(new Text("7600000000000000000"), uints.get(4));
+        assertEquals(
+            new Text(
+                "12112854536475579701709856639006968439346510087985402025553784139104925563853"),
+            uints.get(8));
+        assertEquals(
+            new Text(
+                "70816310222907633346803407554718755161164435004871826408466484445498409136346"),
+            uints.get(17));
     }
 }
