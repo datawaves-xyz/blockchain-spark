@@ -13,11 +13,8 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
@@ -63,34 +60,34 @@ public class HiveConverterTest {
 
         assertTrue(result.get(0) instanceof Text);
         assertEquals("0x7be8076f4ea4a4ad08075c2508e481d6c946d12b", result.get(0).toString());
-        assertTrue(result.get(1) instanceof IntWritable);
+        assertTrue(result.get(1) instanceof Text);
         assertEquals(-100, Integer.parseInt(result.get(1).toString()));
-        assertTrue(result.get(2) instanceof IntWritable);
+        assertTrue(result.get(2) instanceof Text);
         assertEquals(-3000, Integer.parseInt(result.get(2).toString()));
-        assertTrue(result.get(3) instanceof IntWritable);
+        assertTrue(result.get(3) instanceof Text);
         assertEquals(-2000000000, Integer.parseInt(result.get(3).toString()));
-        assertTrue(result.get(4) instanceof LongWritable);
+        assertTrue(result.get(4) instanceof Text);
         assertEquals(-8000000000L, Long.parseLong(result.get(4).toString()));
-        assertTrue(result.get(5) instanceof IntWritable);
+        assertTrue(result.get(5) instanceof Text);
         assertEquals(100, Integer.parseInt(result.get(5).toString()));
-        assertTrue(result.get(6) instanceof IntWritable);
+        assertTrue(result.get(6) instanceof Text);
         assertEquals(30000, Integer.parseInt(result.get(6).toString()));
-        assertTrue(result.get(7) instanceof LongWritable);
+        assertTrue(result.get(7) instanceof Text);
         assertEquals(2000000000L, Long.parseLong(result.get(7).toString()));
-        assertTrue(result.get(8) instanceof HiveDecimalWritable);
+        assertTrue(result.get(8) instanceof Text);
         assertEquals(8000000000L, Long.parseLong(result.get(8).toString()));
         assertTrue(result.get(9) instanceof BooleanWritable);
         assertTrue(Boolean.parseBoolean(result.get(9).toString()));
-        assertTrue(result.get(10) instanceof HiveDecimalWritable);
+        assertTrue(result.get(10) instanceof Text);
         assertEquals(-10000.2, Double.parseDouble(result.get(10).toString()), 0.0000001);
-        assertTrue(result.get(11) instanceof HiveDecimalWritable);
+        assertTrue(result.get(11) instanceof Text);
         assertEquals(10000.2, Double.parseDouble(result.get(11).toString()), 0.0000001);
         assertTrue(result.get(12) instanceof BytesWritable);
         assertTrue(result.get(13) instanceof BytesWritable);
         assertTrue(result.get(14) instanceof Text);
-        assertTrue(((List<Object>) result.get(15)).get(0) instanceof IntWritable);
+        assertTrue(((List<Object>) result.get(15)).get(0) instanceof Text);
         assertTrue(((List<Object>) result.get(17)).get(0) instanceof BooleanWritable);
-        assertTrue(((LinkedList<Object>) result.get(18)).get(0) instanceof HiveDecimalWritable);
+        assertTrue(((LinkedList<Object>) result.get(18)).get(0) instanceof Text);
         assertTrue(((LinkedList<Object>) result.get(18)).get(1) instanceof Text);
     }
 }

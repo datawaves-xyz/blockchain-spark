@@ -8,12 +8,10 @@ import com.google.gson.GsonBuilder;
 import io.iftech.sparkudf.Mocks.ContractEvent;
 import io.iftech.sparkudf.Mocks.EventField;
 import io.iftech.sparkudf.converter.Converter;
-import java.math.BigDecimal;
 import java.util.List;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -76,8 +74,6 @@ public class DecodeContractEventHiveUDFTest {
 
         assertEquals("0xb3f923eabaf178fc1bd8e13902fc5c61d3ddef5b", resultData.get(0).toString());
         assertEquals("0x28c6c06298d514db089934071355e5743bf21d60", resultData.get(1).toString());
-        assertEquals(0, ((HiveDecimalWritable) resultData.get(2))
-            .getHiveDecimal().bigDecimalValue()
-            .compareTo(new BigDecimal("279283000000000000000000")));
+        assertEquals("279283000000000000000000", resultData.get(2).toString());
     }
 }
